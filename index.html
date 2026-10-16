@@ -28,21 +28,23 @@
             --m-inside: 16mm;
             --m-outside: 20mm;
             
+            /* Typography */
+            --base-font-size: 10pt;
+            --base-leading: 14pt;
+            --baseline-increment: var(--base-leading);
+            --baseline-offset: calc(((var(--baseline-increment) - var(--base-font-size)) / 2) + (var(--base-font-size) * 0.8));
+            --p-ti: 5mm;
+            --p-mt: 0px;
+            --p-mb: 0px;
+
             /* Grid Systems Defaults */
             --grid-cols: 1;
             --grid-gutter: 4.2mm;
             --guide-rows: 4;
             --guide-cols: 2;
+            --guide-row-height: 1fr;
             --guide-rgutter: 4mm;
             --guide-cgutter: 4mm;
-
-            /* Typography */
-            --base-font-size: 10pt;
-            --base-leading: 14pt;
-            --baseline-increment: var(--base-leading);
-            --p-ti: 5mm;
-            --p-mt: 0px;
-            --p-mb: 0px;
             
             --guide-color: rgba(0, 255, 255, 0.4);
             --guide-fill-color: rgba(255, 0, 255, 0.1);
@@ -466,6 +468,12 @@
             row-gap: var(--guide-rgutter);
             z-index: 100;
         }
+        .snap-guides-baseline .grid-overlay {
+            top: calc(var(--m-top) + var(--baseline-offset) - 1px);
+            bottom: auto;
+            grid-template-rows: repeat(var(--guide-rows), var(--guide-row-height));
+            row-gap: var(--guide-rgutter);
+        }
         .facing-enabled .page.odd-page .grid-overlay { left: var(--m-inside); right: var(--m-outside); }
         .facing-enabled .page.even-page .grid-overlay { left: var(--m-outside); right: var(--m-inside); }
         .facing-disabled .page .grid-overlay { left: var(--m-inside); right: var(--m-outside); }
@@ -485,7 +493,7 @@
                2. + (var(--base-font-size) * 0.8) = ascender depth from top of em-square to baseline
                3. - 1px = aligns bottom of the 1px gradient stroke with the text baseline
             */
-            background-position: 0 calc(((var(--baseline-increment) - var(--base-font-size)) / 2) + (var(--base-font-size) * 0.8) - 1px);
+            background-position: 0 calc(var(--baseline-offset) - 1px);
         }
 
         /* Page Numbering */
@@ -809,12 +817,17 @@
                 <div class="gestalt-card">
                     <h3 class="subsection-title">Grid System (Müller-Brockmann)</h3>
                     <div class="control-grid">
-                        <div class="control-group"><label>Rows</label><div class="input-suffix"><input type="number" id="guide-rows" value="4"><span></span></div></div>
-                        <div class="control-group"><label>R-Gutter</label><div class="input-suffix"><input type="number" id="guide-rgutter" value="4"><span>mm</span></div></div>
-                        <div class="control-group"><label>Cols</label><div class="input-suffix"><input type="number" id="guide-cols" value="2"><span></span></div></div>
-                        <div class="control-group"><label>C-Gutter</label><div class="input-suffix"><input type="number" id="guide-cgutter" value="4"><span>mm</span></div></div>
+                        <div class="control-group"><label>Rows</label><div class="input-suffix"><input type="number" id="guide-rows" value="4" min="1"><span></span></div></div>
+                        <div class="control-group"><label>R-Gutter</label><div class="input-suffix"><input type="number" id="guide-rgutter" value="4" min="0" step="0.5"><span>mm</span></div></div>
+                        <div class="control-group"><label>Cols</label><div class="input-suffix"><input type="number" id="guide-cols" value="2" min="1"><span></span></div></div>
+                        <div class="control-group"><label>C-Gutter</label><div class="input-suffix"><input type="number" id="guide-cgutter" value="4" min="0" step="0.5"><span>mm</span></div></div>
                         <div class="control-group"><label>Layout Color</label><input type="color" id="guide-color-picker" value="#00ffff"></div>
                     </div>
+                    <div class="control-group checkbox-row" style="margin-top: 4px;">
+                        <input type="checkbox" id="snap-guides-baseline" checked>
+                        <label for="snap-guides-baseline">Snap Rows &amp; R-Gutter to Baseline Grid</label>
+                    </div>
+                    <div class="help-text" id="guide-snap-info">Locked: 7× lines/row (34.57 mm) · 1× gutter (4.94 mm)</div>
 
                     <hr class="separator">
                     <h3 class="subsection-title">Baseline Grid</h3>
@@ -1059,7 +1072,7 @@
 
     <main id="workspace">
         <div id="canvas">
-            <div id="document-container" lang="de" class="facing-enabled show-guides show-baseline">
+            <div id="document-container" lang="de" class="facing-enabled show-guides show-baseline snap-guides-baseline">
                 <!-- Pages flow here procedurally -->
             </div>
         </div>
@@ -1297,6 +1310,19 @@
                 if (pfScaleWrapper) {
                     pfScaleWrapper.style.transform = `translate(calc(-50% + ${this.pfTranslateX}px), calc(-50% + ${this.pfTranslateY}px)) scale(${this.pfScale})`;
                 }
+            }
+
+            rebuildGridOverlayCells() {
+                const cells = Math.max(1, parseInt(document.getElementById('guide-rows').value) || 4) *
+                              Math.max(1, parseInt(document.getElementById('guide-cols').value) || 2);
+                this.docContainer.querySelectorAll('.grid-overlay').forEach(overlay => {
+                    overlay.innerHTML = '';
+                    for (let j = 0; j < cells; j++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'grid-cell';
+                        overlay.appendChild(cell);
+                    }
+                });
             }
 
             initPIPEditor() {
@@ -1680,6 +1706,55 @@
                     this.queueReflow();
                 };
 
+                const updateStructureGrid = () => {
+                    const snap = document.getElementById('snap-guides-baseline').checked;
+                    const rows = Math.max(1, parseInt(document.getElementById('guide-rows').value) || 1);
+                    const rawGutterMm = Math.max(0, parseFloat(document.getElementById('guide-rgutter').value) || 0);
+                    const incMm = getBaselineIncrementMm();
+                    const infoEl = document.getElementById('guide-snap-info');
+
+                    document.documentElement.style.setProperty('--guide-rows', rows);
+
+                    if (snap) {
+                        this.docContainer.classList.add('snap-guides-baseline');
+
+                        const docHeightStr = getComputedStyle(document.documentElement).getPropertyValue('--doc-height').trim();
+                        const docHeightMm = parseFloat(docHeightStr) || 210;
+                        const mTopMm = parseFloat(document.getElementById('margin-top').value) || 16;
+                        const mBottomMm = parseFloat(document.getElementById('margin-bottom').value) || 24;
+
+                        const fontSizeStr = getComputedStyle(document.documentElement).getPropertyValue('--base-font-size').trim();
+                        const fontSizePt = parseFloat(fontSizeStr) || 10;
+                        const fontSizeMm = fontSizePt * (25.4 / 72);
+
+                        const baselineOffsetMm = ((incMm - fontSizeMm) / 2) + (fontSizeMm * 0.8);
+                        const usableHeightMm = Math.max(0, docHeightMm - mTopMm - mBottomMm - baselineOffsetMm);
+                        const totalIntervals = Math.max(rows, Math.floor((usableHeightMm + 0.001) / incMm));
+
+                        let gutterLines = (rawGutterMm > 0 && rows > 1) ? Math.max(1, Math.round(rawGutterMm / incMm)) : 0;
+                        const maxGutterLines = rows > 1 ? Math.max(0, Math.floor((totalIntervals - rows) / (rows - 1))) : 0;
+                        gutterLines = Math.min(gutterLines, maxGutterLines);
+
+                        const remainingIntervals = Math.max(rows, totalIntervals - (rows - 1) * gutterLines);
+                        const rowLines = Math.max(1, Math.floor(remainingIntervals / rows));
+
+                        if (gutterLines > 0) {
+                            document.documentElement.style.setProperty('--guide-row-height', `calc((var(--baseline-increment) * ${rowLines}) + 1px)`);
+                            document.documentElement.style.setProperty('--guide-rgutter', `calc((var(--baseline-increment) * ${gutterLines}) - 1px)`);
+                        } else {
+                            document.documentElement.style.setProperty('--guide-row-height', `calc((var(--baseline-increment) * ${rowLines}) + 1px)`);
+                            document.documentElement.style.setProperty('--guide-rgutter', `-1px`);
+                        }
+
+                        infoEl.textContent = `Locked: ${rowLines}× lines/row (${(rowLines * incMm).toFixed(2)} mm) · ${gutterLines}× gutter (${(gutterLines * incMm).toFixed(2)} mm)`;
+                    } else {
+                        this.docContainer.classList.remove('snap-guides-baseline');
+                        document.documentElement.style.setProperty('--guide-row-height', '1fr');
+                        document.documentElement.style.setProperty('--guide-rgutter', `${rawGutterMm}mm`);
+                        infoEl.textContent = `Freeform: ${rows} rows (1fr) · ${rawGutterMm.toFixed(1)} mm gutter (not locked to baseline)`;
+                    }
+                };
+
                 const updateBaselineIncrement = () => {
                     if (baseIncType.value === 'auto') {
                         document.documentElement.style.setProperty('--baseline-increment', 'var(--base-leading)');
@@ -1688,6 +1763,7 @@
                         document.documentElement.style.setProperty('--baseline-increment', baseCustomVal.value + 'mm');
                         baseCustomWrap.style.display = 'flex';
                     }
+                    updateStructureGrid();
                     updateParagraphSpacing();
                 };
 
@@ -1712,6 +1788,7 @@
                     const sizes = { 'A4': ['210mm', '297mm'], 'A5': ['148mm', '210mm'], 'A6': ['105mm', '148mm'] };
                     document.documentElement.style.setProperty('--doc-width', sizes[e.target.value][0]);
                     document.documentElement.style.setProperty('--doc-height', sizes[e.target.value][1]);
+                    updateStructureGrid();
                     this.flowTextToPages();
                 });
 
@@ -1721,7 +1798,6 @@
                     { id: 'margin-inside', var: '--m-inside' },
                     { id: 'margin-outside', var: '--m-outside' },
                     { id: 'col-gutter', var: '--grid-gutter' },
-                    { id: 'guide-rgutter', var: '--guide-rgutter' },
                     { id: 'guide-cgutter', var: '--guide-cgutter' }
                 ];
                 
@@ -1730,6 +1806,9 @@
                         document.documentElement.style.setProperty(item.var, e.target.value + 'mm');
                         if (item.id === 'margin-top') {
                             document.getElementById('baseline-start-display').value = e.target.value + ' mm';
+                        }
+                        if (item.id === 'margin-top' || item.id === 'margin-bottom') {
+                            updateStructureGrid();
                         }
                         this.flowTextToPages();
                     });
@@ -1740,13 +1819,26 @@
                     this.flowTextToPages();
                 });
                 
-                document.getElementById('guide-rows').addEventListener('input', (e) => {
-                    document.documentElement.style.setProperty('--guide-rows', e.target.value);
+                document.getElementById('guide-rows').addEventListener('input', () => {
+                    updateStructureGrid();
+                    this.rebuildGridOverlayCells();
+                });
+
+                document.getElementById('guide-rgutter').addEventListener('input', () => {
+                    updateStructureGrid();
+                });
+
+                document.getElementById('snap-guides-baseline').addEventListener('change', () => {
+                    updateStructureGrid();
                 });
                 
                 document.getElementById('guide-cols').addEventListener('input', (e) => {
-                    document.documentElement.style.setProperty('--guide-cols', e.target.value);
+                    const cols = Math.max(1, parseInt(e.target.value) || 1);
+                    document.documentElement.style.setProperty('--guide-cols', cols);
+                    this.rebuildGridOverlayCells();
                 });
+
+                updateStructureGrid();
 
                 document.getElementById('toggle-guides').addEventListener('change', (e) => {
                     e.target.checked ? this.docContainer.classList.add('show-guides') : this.docContainer.classList.remove('show-guides');
@@ -2137,7 +2229,8 @@
                         
                         const overlay = document.createElement('div');
                         overlay.className = 'grid-overlay';
-                        const cells = parseInt(document.getElementById('guide-rows').value || 4) * parseInt(document.getElementById('guide-cols').value || 2);
+                        const cells = Math.max(1, parseInt(document.getElementById('guide-rows').value) || 4) *
+                                      Math.max(1, parseInt(document.getElementById('guide-cols').value) || 2);
                         for(let j = 0; j < cells; j++) {
                             const cell = document.createElement('div');
                             cell.className = 'grid-cell';
