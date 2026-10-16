@@ -41,6 +41,8 @@
             --base-leading: 14pt;
             --baseline-increment: var(--base-leading);
             --p-ti: 5mm;
+            --p-mt: 0px;
+            --p-mb: 0px;
             
             --guide-color: rgba(0, 255, 255, 0.4);
             --guide-fill-color: rgba(255, 0, 255, 0.1);
@@ -422,8 +424,8 @@
             margin-left: var(--p-ml, 0mm);
             margin-right: var(--p-mr, 0mm);
             text-indent: var(--p-ti, 0mm);
-            margin-top: var(--p-mt, 0mm);
-            margin-bottom: var(--p-mb, 0mm);
+            margin-top: var(--p-mt, 0px);
+            margin-bottom: var(--p-mb, 0px);
             text-align: var(--text-align, justify);
             text-align-last: var(--text-align-last, left);
             word-spacing: var(--word-spacing, 0em);
@@ -944,10 +946,15 @@
                     
                     <hr class="separator">
                     
-                    <div class="control-grid">
-                        <div class="control-group"><label>Space Before</label><div class="input-suffix"><input type="number" id="p-mt" value="0"><span>mm</span></div></div>
-                        <div class="control-group"><label>Space After</label><div class="input-suffix"><input type="number" id="p-mb" value="0"><span>mm</span></div></div>
+                    <div class="control-group checkbox-row" style="margin-bottom: 2px;">
+                        <input type="checkbox" id="p-snap-spacing" checked>
+                        <label for="p-snap-spacing">Snap Spacing to Baseline Grid</label>
                     </div>
+                    <div class="control-grid">
+                        <div class="control-group"><label>Space Before</label><div class="input-suffix"><input type="number" id="p-mt" value="0" min="0" step="0.5"><span>mm</span></div></div>
+                        <div class="control-group"><label>Space After</label><div class="input-suffix"><input type="number" id="p-mb" value="0" min="0" step="0.5"><span>mm</span></div></div>
+                    </div>
+                    <div class="help-text" id="p-spacing-snap-info">Locked: 0× before (0.00 mm) · 0× after (0.00 mm)</div>
 
                     <hr class="separator">
 
@@ -1636,6 +1643,43 @@
                 const baseCustomWrap = document.getElementById('baseline-custom-wrapper');
                 const baseCustomVal = document.getElementById('baseline-custom-value');
 
+                const getBaselineIncrementMm = () => {
+                    if (baseIncType.value === 'auto') {
+                        const leadingStr = getComputedStyle(document.documentElement).getPropertyValue('--base-leading').trim();
+                        const val = parseFloat(leadingStr) || 14;
+                        if (leadingStr.endsWith('pt')) return val * (25.4 / 72);
+                        if (leadingStr.endsWith('px')) return val * (25.4 / 96);
+                        return val;
+                    }
+                    return parseFloat(baseCustomVal.value) || 4.9;
+                };
+
+                const quantizeLines = (mmValue, incMm) => {
+                    if (!mmValue || mmValue <= 0) return 0;
+                    return Math.max(1, Math.round(mmValue / incMm));
+                };
+
+                const updateParagraphSpacing = () => {
+                    const mtRaw = Math.max(0, parseFloat(document.getElementById('p-mt').value) || 0);
+                    const mbRaw = Math.max(0, parseFloat(document.getElementById('p-mb').value) || 0);
+                    const snap = document.getElementById('p-snap-spacing').checked;
+                    const incMm = getBaselineIncrementMm();
+                    const infoEl = document.getElementById('p-spacing-snap-info');
+
+                    if (snap) {
+                        const mtLines = quantizeLines(mtRaw, incMm);
+                        const mbLines = quantizeLines(mbRaw, incMm);
+                        document.documentElement.style.setProperty('--p-mt', `calc(var(--baseline-increment) * ${mtLines})`);
+                        document.documentElement.style.setProperty('--p-mb', `calc(var(--baseline-increment) * ${mbLines})`);
+                        infoEl.textContent = `Locked: ${mtLines}× before (${(mtLines * incMm).toFixed(2)} mm) · ${mbLines}× after (${(mbLines * incMm).toFixed(2)} mm)`;
+                    } else {
+                        document.documentElement.style.setProperty('--p-mt', `${mtRaw}mm`);
+                        document.documentElement.style.setProperty('--p-mb', `${mbRaw}mm`);
+                        infoEl.textContent = `Freeform: ${mtRaw.toFixed(1)} mm before · ${mbRaw.toFixed(1)} mm after (may drift off grid)`;
+                    }
+                    this.queueReflow();
+                };
+
                 const updateBaselineIncrement = () => {
                     if (baseIncType.value === 'auto') {
                         document.documentElement.style.setProperty('--baseline-increment', 'var(--base-leading)');
@@ -1644,7 +1688,7 @@
                         document.documentElement.style.setProperty('--baseline-increment', baseCustomVal.value + 'mm');
                         baseCustomWrap.style.display = 'flex';
                     }
-                    this.flowTextToPages();
+                    updateParagraphSpacing();
                 };
 
                 baseIncType.addEventListener('change', updateBaselineIncrement);
@@ -1740,21 +1784,26 @@
                         btn.classList.add('active');
                         document.documentElement.style.setProperty('--text-align', btn.dataset.align);
                         document.documentElement.style.setProperty('--text-align-last', btn.dataset.last);
+                        this.queueReflow();
                     });
                 });
 
-                const paraInputs = [
+                const horizontalParaInputs = [
                     { id: 'p-ml', var: '--p-ml' },
                     { id: 'p-mr', var: '--p-mr' },
-                    { id: 'p-ti', var: '--p-ti' },
-                    { id: 'p-mt', var: '--p-mt' },
-                    { id: 'p-mb', var: '--p-mb' }
+                    { id: 'p-ti', var: '--p-ti' }
                 ];
 
-                paraInputs.forEach(item => {
+                horizontalParaInputs.forEach(item => {
                     document.getElementById(item.id).addEventListener('input', (e) => {
                         document.documentElement.style.setProperty(item.var, e.target.value + 'mm');
+                        this.queueReflow();
                     });
+                });
+
+                ['p-mt', 'p-mb', 'p-snap-spacing'].forEach(id => {
+                    document.getElementById(id).addEventListener('input', updateParagraphSpacing);
+                    document.getElementById(id).addEventListener('change', updateParagraphSpacing);
                 });
 
                 document.getElementById('p-drop-lines').addEventListener('input', (e) => {
