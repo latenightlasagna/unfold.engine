@@ -7,18 +7,19 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='rgb(0,0,255)'><path d='M2 3h9a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H2V3zm20 0h-9a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h9V3z'/></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Swiss UI */
-            --ui-bg: #e6e6e6;
-            --ui-panel: #d4d4d4;
+            /* Swiss UI Palette */
+            --ui-bg: #ececec;
+            --ui-panel: #dcdcdc;
             --ui-card: #ffffff;
-            --ui-text: #1a1a1a;
+            --ui-text: #141414;
             --ui-text-muted: #666666;
             --primary-blue: rgb(0, 0, 255);
-            --border-color: #c0c0c0;
-            --focus-ring: rgba(0, 0, 255, 0.3);
+            --primary-blue-soft: rgba(0, 0, 255, 0.08);
+            --border-color: #c4c4c4;
+            --focus-ring: rgba(0, 0, 255, 0.25);
             
             /* Document Geometry */
             --doc-width: 148mm;
@@ -66,42 +67,63 @@
             font-size: 13px;
         }
 
+        /* --- LEFT SIDEBAR ARCHITECTURE --- */
         #ui-panel {
-            width: 340px;
-            min-width: 340px;
+            width: 356px;
+            min-width: 356px;
             background-color: var(--ui-panel);
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
-            z-index: 10;
-            box-shadow: 2px 0 15px rgba(0,0,0,0.08);
+            height: 100vh;
+            z-index: 20;
+            border-right: 1px solid var(--border-color);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.08);
         }
 
-        header {
-            padding: 24px 20px;
+        .sidebar-header {
+            padding: 18px 20px 14px;
             background-color: var(--ui-panel);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-shrink: 0;
         }
 
-        header h1 {
-            font-size: 18px;
+        .sidebar-header h1 {
+            font-size: 15px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: -0.5px;
+            letter-spacing: 0.4px;
             color: var(--ui-text);
+        }
+
+        .sidebar-header .version-tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--primary-blue);
+            background: var(--primary-blue-soft);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        #sidebar-scroll {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background-color: var(--ui-bg);
         }
 
         /* Accordions - Gestalt Grouping */
         details.accordion {
-            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
         }
 
         details.accordion summary {
-            padding: 16px 20px;
-            font-size: 13px;
-            font-weight: 600;
+            padding: 13px 18px;
+            font-size: 12px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             cursor: pointer;
@@ -110,53 +132,99 @@
             justify-content: space-between;
             align-items: center;
             background-color: var(--ui-panel);
-            color: var(--primary-blue);
+            color: var(--ui-text);
             user-select: none;
-            transition: background 0.2s ease, color 0.2s ease;
+            transition: background 0.15s ease, color 0.15s ease;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        details[open].accordion summary {
+            color: var(--primary-blue);
+            border-bottom: 1px solid var(--border-color);
         }
 
         details.accordion summary::-webkit-details-marker { display: none; }
-        details.accordion summary:hover { background-color: #cccccc; color: var(--primary-blue); }
+        details.accordion summary:hover { background-color: #d0d0d0; }
+
+        .summary-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-num {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--primary-blue);
+            background: rgba(0, 0, 255, 0.08);
+            padding: 2px 5px;
+            border-radius: 2px;
+        }
+
+        .summary-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .summary-meta {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--ui-text-muted);
+            text-transform: none;
+            letter-spacing: 0;
+        }
 
         details.accordion summary .arrow {
             width: 0; height: 0; 
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
             border-top: 5px solid currentColor;
             transition: transform 0.2s ease;
         }
         details[open].accordion summary .arrow { transform: rotate(180deg); }
 
         .accordion-content {
-            padding: 16px 20px 24px 20px;
+            padding: 14px;
             background-color: var(--ui-bg);
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        /* Common Regions (Cards) */
-        .gestalt-card {
-            background-color: var(--ui-card);
-            border-radius: 4px;
-            padding: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        .subsection-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--primary-blue);
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
+        /* Common Regions (Cards) */
+        .gestalt-card {
+            background-color: var(--ui-card);
+            border-radius: 5px;
+            padding: 14px;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .control-row { display: flex; gap: 12px; align-items: flex-end; }
-        .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .subsection-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--primary-blue);
+            font-weight: 700;
+            letter-spacing: 0.6px;
+        }
+
+        .control-row { display: flex; gap: 10px; align-items: flex-end; }
+        .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .control-group { display: flex; flex-direction: column; gap: 4px; flex: 1; }
         
         .control-group.checkbox-row {
@@ -169,36 +237,58 @@
             font-size: 11px;
             font-weight: 500;
             color: var(--ui-text-muted);
+            cursor: pointer;
         }
 
         input[type="text"], input[type="number"], select {
-            background: #f7f7f7;
-            border: 1px solid transparent;
-            padding: 8px 10px;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            padding: 7px 9px;
             font-family: 'IBM Plex Sans', sans-serif;
             font-size: 12px;
+            color: var(--ui-text);
             border-radius: 3px;
             outline: none;
             width: 100%;
-            transition: all 0.2s;
+            transition: all 0.15s;
         }
 
-        input:hover, select:hover { background: #eeeeee; }
+        input:hover, select:hover { background: #ededed; border-color: #cccccc; }
         input:focus, select:focus {
             background: #ffffff;
             border-color: var(--primary-blue);
             box-shadow: 0 0 0 2px var(--focus-ring);
         }
-        input[type="checkbox"] { accent-color: var(--primary-blue); width: 14px; height: 14px; }
+        input[type="checkbox"] { accent-color: var(--primary-blue); width: 14px; height: 14px; cursor: pointer; }
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: 1px solid #e0e0e0;
+            border-radius: 3px;
+            width: 100%;
+            height: 31px;
+            padding: 2px;
+            background: #f5f5f5;
+            cursor: pointer;
+        }
 
-        .help-text { font-size: 10px; color: var(--ui-text-muted); line-height: 1.4; }
+        .help-text {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--ui-text-muted);
+            line-height: 1.4;
+            background: #f7f7f9;
+            padding: 6px 8px;
+            border-radius: 3px;
+            border-left: 2px solid var(--primary-blue);
+        }
 
         .drop-zone {
             border: 1.5px dashed var(--border-color);
             background: #fafafa;
-            padding: 24px;
+            padding: 16px;
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
+            font-weight: 500;
             color: var(--ui-text-muted);
             cursor: pointer;
             border-radius: 4px;
@@ -206,53 +296,52 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
-        .drop-zone.dragover {
-            background: rgba(0, 0, 255, 0.05);
+        .drop-zone:hover, .drop-zone.dragover {
+            background: var(--primary-blue-soft);
             border-color: var(--primary-blue);
             color: var(--primary-blue);
         }
-        .drop-zone svg { width: 24px; height: 24px; fill: currentColor; opacity: 0.5; }
+        .drop-zone svg { width: 20px; height: 20px; fill: currentColor; opacity: 0.65; }
 
         /* Custom Styles UI */
         .style-row-container {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
         
         .custom-style-row {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: #fafafa;
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            padding: 8px;
+            padding: 6px 8px;
             transition: all 0.2s ease;
         }
         
         .style-name {
-            font-size: 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
             font-weight: 600;
-            width: 40px;
+            width: 42px;
             color: var(--primary-blue);
         }
         
         .style-drop {
-            flex: 1 1 100%;
-            padding: 16px;
+            flex: 1 1 auto;
+            padding: 8px;
             margin: 0;
-            min-width: 100px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 90px;
         }
         
         .style-drop.filled {
-            flex: 1 1 auto;
-            padding: 6px 10px;
-            background: rgba(0, 0, 255, 0.05);
+            padding: 5px 8px;
+            background: var(--primary-blue-soft);
             border-style: solid;
             border-color: var(--primary-blue);
             color: var(--primary-blue);
@@ -263,7 +352,7 @@
             flex-direction: row;
             gap: 4px;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.2s ease;
         }
 
         .style-drop.filled + .style-actions {
@@ -273,9 +362,9 @@
         
         .style-btn {
             background: #ffffff; border: 1px solid var(--border-color);
-            padding: 4px 8px; cursor: pointer; border-radius: 3px;
-            font-size: 11px; font-weight: 500; font-family: 'IBM Plex Sans';
-            transition: all 0.2s;
+            padding: 4px 7px; cursor: pointer; border-radius: 3px;
+            font-size: 10px; font-weight: 600; font-family: 'IBM Plex Sans';
+            transition: all 0.15s;
         }
         .style-btn:hover { background: #eeeeee; }
         .style-btn.ab-btn.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
@@ -284,55 +373,93 @@
         /* Paragraph Panel */
         .separator {
             border: 0;
-            border-top: 1px solid var(--border-color);
-            margin: 8px 0;
-            opacity: 0.5;
+            border-top: 1px solid #e8e8e8;
+            margin: 4px 0;
         }
 
         .alignment-toolbar {
             display: flex;
-            background: #f7f7f7;
-            border: 1px solid var(--border-color);
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
             border-radius: 3px;
             overflow: hidden;
-            margin-bottom: 8px;
         }
         .align-btn {
-            flex: 1; background: transparent; border: none; padding: 8px 0;
-            border-right: 1px solid var(--border-color); cursor: pointer;
-            font-size: 14px; color: var(--ui-text-muted); transition: all 0.2s;
+            flex: 1; background: transparent; border: none; padding: 7px 0;
+            border-right: 1px solid #e0e0e0; cursor: pointer;
+            font-size: 14px; color: var(--ui-text-muted); transition: all 0.15s;
             display: flex; justify-content: center; align-items: center;
         }
         .align-btn:last-child { border-right: none; }
-        .align-btn:hover { background: #eeeeee; }
-        .align-btn.active { background: #e0e0ff; color: var(--primary-blue); box-shadow: inset 0 0 0 1px var(--primary-blue); }
+        .align-btn:hover { background: #eaeaea; }
+        .align-btn.active { background: #e3e6ff; color: var(--primary-blue); box-shadow: inset 0 0 0 1px var(--primary-blue); }
 
         .input-suffix {
-            display: flex; align-items: center; gap: 6px;
+            display: flex; align-items: center; gap: 5px;
         }
-        .input-suffix input { width: 85px; padding-right: 4px; }
-        .input-suffix span { font-size: 11px; color: var(--ui-text-muted); }
+        .input-suffix input { flex: 1; min-width: 0; }
+        .input-suffix span {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--ui-text-muted);
+            min-width: 18px;
+        }
 
-        .slider-group { padding: 8px 0; }
-        .slider-labels { display: flex; justify-content: space-between; font-size: 10px; font-weight: 500; margin-bottom: 6px; }
+        .slider-group { padding: 4px 0; }
+        .slider-labels { display: flex; justify-content: space-between; font-size: 10px; font-weight: 500; margin-bottom: 5px; color: var(--ui-text-muted); }
         .slider { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: var(--border-color); outline: none; }
-        .slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--ui-text); cursor: pointer; border: 2px solid white; box-shadow: 0 0 0 1px var(--ui-text); }
+        .slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--primary-blue); cursor: pointer; border: 2px solid white; box-shadow: 0 0 0 1px var(--primary-blue); }
 
         .primary-btn {
             background-color: var(--primary-blue);
             color: white;
             border: none;
-            padding: 12px;
+            padding: 10px 12px;
             width: 100%;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             border-radius: 3px;
-            transition: opacity 0.2s, transform 0.1s;
+            transition: opacity 0.15s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
-        .primary-btn:hover { opacity: 0.9; }
-        .primary-btn:active { transform: scale(0.98); }
+        .primary-btn:hover { opacity: 0.92; }
+        .primary-btn:active { transform: scale(0.99); }
+        .secondary-btn {
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
 
+        /* Pinned Output Dock in Sidebar Footer */
+        .sidebar-footer {
+            padding: 12px 14px;
+            background: var(--ui-panel);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .footer-preset-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .footer-preset-row select {
+            font-size: 10px;
+            padding: 5px 6px;
+            background: #eaeaea;
+        }
+        .footer-btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        /* --- WORKSPACE & FLOATING CANVAS HUD --- */
         #workspace {
             flex: 1;
             background-color: #8c8c8c;
@@ -343,6 +470,126 @@
             background-size: 20px 20px;
         }
         #workspace:active { cursor: grabbing; }
+
+        #workspace-hud {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 150;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(24, 24, 24, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 6px 8px;
+            border-radius: 6px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+            border: 1px solid rgba(255,255,255,0.12);
+            user-select: none;
+        }
+
+        .hud-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .hud-divider {
+            width: 1px;
+            height: 18px;
+            background: rgba(255,255,255,0.18);
+            margin: 0 4px;
+        }
+
+        .hud-pill {
+            background: transparent;
+            color: #d4d4d4;
+            border: 1px solid transparent;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .hud-pill:hover {
+            background: rgba(255,255,255,0.1);
+            color: #ffffff;
+        }
+        .hud-pill.active {
+            background: var(--primary-blue);
+            color: #ffffff;
+        }
+        .hud-pill .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.8;
+        }
+        .hud-kbd {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            opacity: 0.65;
+            background: rgba(0,0,0,0.25);
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+
+        .hud-zoom-btn {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hud-zoom-btn:hover { background: rgba(255,255,255,0.2); }
+        #hud-zoom-reset {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: #e6e6e6;
+            background: transparent;
+            border: none;
+            padding: 0 6px;
+            cursor: pointer;
+            min-width: 44px;
+            text-align: center;
+        }
+        #hud-zoom-reset:hover { color: #fff; text-decoration: underline; }
+
+        #unfold-btn {
+            background: #ffffff;
+            color: #141414;
+            border: none;
+            padding: 5px 11px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+        #unfold-btn:hover {
+            background: var(--primary-blue);
+            color: #ffffff;
+        }
 
         #canvas {
             transform-origin: 50% 50%;
@@ -452,7 +699,7 @@
             list-style-type: none;
         }
         .page li { 
-            margin-bottom: 0; /* Keep list items locked to the baseline increment */
+            margin-bottom: 0;
             break-inside: avoid;
         }
         .page ul li::marker { content: var(--bullet-char); color: var(--primary-blue); }
@@ -486,13 +733,6 @@
         .show-baseline .page-content {
             background-image: linear-gradient(to bottom, var(--baseline-color) 1px, transparent 1px);
             background-size: 100% var(--baseline-increment);
-            
-            /* 
-               Calculate the exact baseline:
-               1. (var(--baseline-increment) - var(--base-font-size)) / 2 = top half-leading
-               2. + (var(--base-font-size) * 0.8) = ascender depth from top of em-square to baseline
-               3. - 1px = aligns bottom of the 1px gradient stroke with the text baseline
-            */
             background-position: 0 calc(var(--baseline-offset) - 1px);
         }
 
@@ -515,8 +755,8 @@
         #pip-editor {
             position: fixed;
             top: 0;
-            right: -450px;
-            width: 450px;
+            right: -460px;
+            width: 460px;
             height: 100vh;
             background: #1a1a1a;
             color: #d4d4d4;
@@ -531,7 +771,7 @@
         
         #pip-editor header {
             padding: 16px 20px;
-            background: #2a2a2a;
+            background: #242424;
             border-bottom: 1px solid #333;
             display: flex;
             justify-content: space-between;
@@ -544,20 +784,20 @@
             display: flex;
             background: #2a2a2a;
             padding: 8px 20px;
-            gap: 8px;
-            border-bottom: 1px solid #444;
+            gap: 6px;
+            border-bottom: 1px solid #3c3c3c;
         }
         .pip-btn {
-            background: #444;
+            background: #404040;
             color: #fff;
             border: none;
-            padding: 6px 12px;
+            padding: 6px 11px;
             border-radius: 3px;
             cursor: pointer;
             font-family: inherit;
             font-size: 11px;
             font-weight: 600;
-            transition: background 0.2s;
+            transition: background 0.15s;
         }
         .pip-btn:hover { background: var(--primary-blue); }
 
@@ -570,9 +810,9 @@
             font-size: 13px;
             line-height: 1.6;
             outline: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.25s ease;
         }
-        #pip-editor:not(.active) #pip-content { opacity: 0.4; }
+        #pip-editor:not(.active) #pip-content { opacity: 0.55; }
         
         /* WYSIWYG Styling inside PIP */
         #pip-content h1 { font-size: 20px; font-weight: 700; margin-bottom: 10px; color: #fff; }
@@ -648,7 +888,7 @@
             padding: 0 !important; 
           }
           
-          #ui-panel, #pip-editor, #unfold-btn, #unfold-tooltip, .modal-overlay { display: none !important; }
+          #ui-panel, #pip-editor, #workspace-hud, #unfold-tooltip, .modal-overlay { display: none !important; }
           
           #workspace, #canvas { 
             background: none !important; 
@@ -713,364 +953,437 @@
     </style>
 </head>
 <body class="show-extras">
-    
-    <!-- Unfold Button Mechanics -->
-    <div id="unfold-btn" style="position:fixed; top:20px; right:20px; z-index:100; font-size:11px; font-weight:600; color:#555; cursor:pointer; letter-spacing:1px; transition: color 0.2s;">UNFOLD</div>
-    <div id="unfold-tooltip" style="position:fixed; display:none; background:rgba(0,0,255,0.1); color:rgb(0,0,255); padding:6px 10px; border-radius:4px; font-size:10px; font-weight:500; pointer-events:none; z-index:101; white-space: nowrap;">press T to unfold &lt;3</div>
 
+    <!-- Floating Tooltip for Editor Shortcut -->
+    <div id="unfold-tooltip" style="position:fixed; display:none; background:rgba(0,0,255,0.92); color:#ffffff; padding:5px 9px; border-radius:4px; font-size:10px; font-weight:600; pointer-events:none; z-index:300; white-space: nowrap;">Press T to open Text Editor</div>
+
+    <!-- LEFT CONTROL PANEL -->
     <aside id="ui-panel">
-        <header>
+        <div class="sidebar-header">
             <h1>Typesetting Engine</h1>
-        </header>
+            <span class="version-tag">SWISS GRID</span>
+        </div>
 
-        <!-- 0. Document Setup -->
-        <details class="accordion" open>
-            <summary>0. Document Setup <span class="arrow"></span></summary>
-            <div class="accordion-content">
-                
-                <div class="gestalt-card">
-                    <h3 class="subsection-title">Table of Contents</h3>
-                    <button id="btn-toggle-toc" class="primary-btn" style="margin-top: 0; margin-bottom: 4px; padding: 10px; font-size: 12px;">Generate TOC</button>
-                    
-                    <div id="toc-settings" style="display: none; flex-direction: column; gap: 12px; margin-top: 8px;">
-                        <div class="control-group">
-                            <label>TOC Layout Style</label>
-                            <select id="toc-layout-style">
-                                <option value="single">1-Page (Title & List Combined)</option>
-                                <option value="spread" selected>2-Page Spread (Title Left / List Right)</option>
-                            </select>
+        <div id="sidebar-scroll">
+            <!-- 01. Manuscript & Content Flow -->
+            <details class="accordion">
+                <summary>
+                    <span class="summary-left"><span class="step-num">01</span> Manuscript &amp; TOC</span>
+                    <span class="summary-right"><span class="summary-meta">Content</span><span class="arrow"></span></span>
+                </summary>
+                <div class="accordion-content">
+                    <!-- Body Text Source Card -->
+                    <div class="gestalt-card">
+                        <div class="card-header">
+                            <h3 class="subsection-title">Body Manuscript</h3>
                         </div>
-                        <div class="control-group">
-                            <label>List Type</label>
-                            <select id="toc-list-type">
-                                <option value="bullet">Bullet List</option>
-                                <option value="numbered">Numbered List</option>
-                            </select>
-                        </div>
-                        <div class="control-group" id="toc-bullet-type-group">
-                            <label>Bullet Style</label>
-                            <select id="toc-bullet-type">
-                                <option value="•">Solid Circle ( • )</option>
-                                <option value="*">Asterisk ( * )</option>
-                                <option value="-">Hyphen ( - )</option>
-                                <option value="custom">Custom Symbol (Upload Image)</option>
-                            </select>
-                        </div>
-                        <div class="drop-zone" id="toc-custom-bullet-drop" style="display: none; padding: 16px;">
+                        <button type="button" id="btn-open-editor-side" class="primary-btn secondary-btn" style="padding: 9px; font-size: 11px;">
+                            ✎ Open Live Text &amp; Style Editor (T)
+                        </button>
+                        <div class="drop-zone" id="text-drop">
                             <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                            Drop SVG/PNG Bullet Here
+                            Drop .html, .md, .txt, or .rtf file
                         </div>
                         <div class="control-row">
-                            <div class="control-group" style="flex:1;"><label>Start on Page</label><input type="number" id="toc-start-page" value="3"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="gestalt-card">
-                    <h3 class="subsection-title">Body Text</h3>
-                    <div class="drop-zone" id="text-drop" style="padding: 16px;">
-                        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                        Drop your text here!
-                    </div>
-                    <div class="control-row" style="margin-top: 8px;">
-                        <div class="control-group" style="flex:1;">
-                            <label>Start on Page</label>
-                            <input type="number" id="body-start-page" value="1">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="gestalt-card">
-                    <h3 class="subsection-title">Page Format</h3>
-                    <div class="control-group">
-                        <label>Preset Size</label>
-                        <select id="doc-preset">
-                            <option value="A4">DIN A4 (210 × 297 mm)</option>
-                            <option value="A5" selected>DIN A5 (148 × 210 mm)</option>
-                            <option value="A6">DIN A6 (105 × 148 mm)</option>
-                        </select>
-                    </div>
-                    <div class="control-group" style="margin-top: 4px;">
-                        <label>Document Layout</label>
-                        <select id="doc-layout">
-                            <option value="facing" selected>Facing Pages (Spreads)</option>
-                            <option value="single">Single Pages</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="gestalt-card">
-                    <h3 class="subsection-title">Margins & Columns</h3>
-                    <div class="control-grid">
-                        <div class="control-group"><label>Top</label><div class="input-suffix"><input type="number" id="margin-top" value="16"><span>mm</span></div></div>
-                        <div class="control-group"><label>Bottom</label><div class="input-suffix"><input type="number" id="margin-bottom" value="24"><span>mm</span></div></div>
-                        <div class="control-group"><label>Inside</label><div class="input-suffix"><input type="number" id="margin-inside" value="16"><span>mm</span></div></div>
-                        <div class="control-group"><label>Outside</label><div class="input-suffix"><input type="number" id="margin-outside" value="20"><span>mm</span></div></div>
-                    </div>
-                    <hr style="border: 0; border-top: 1px solid var(--ui-bg); margin: 4px 0;">
-                    <div class="control-grid">
-                        <div class="control-group"><label>Columns</label><div class="input-suffix"><input type="number" id="col-count" value="1"><span></span></div></div>
-                        <div class="control-group"><label>Gutter</label><div class="input-suffix"><input type="number" id="col-gutter" step="0.1" value="4.2"><span>mm</span></div></div>
-                    </div>
-                </div>
-
-                <div class="gestalt-card">
-                    <h3 class="subsection-title">Grid System (Müller-Brockmann)</h3>
-                    <div class="control-grid">
-                        <div class="control-group"><label>Rows</label><div class="input-suffix"><input type="number" id="guide-rows" value="4" min="1"><span></span></div></div>
-                        <div class="control-group"><label>R-Gutter</label><div class="input-suffix"><input type="number" id="guide-rgutter" value="4" min="0" step="0.5"><span>mm</span></div></div>
-                        <div class="control-group"><label>Cols</label><div class="input-suffix"><input type="number" id="guide-cols" value="2" min="1"><span></span></div></div>
-                        <div class="control-group"><label>C-Gutter</label><div class="input-suffix"><input type="number" id="guide-cgutter" value="4" min="0" step="0.5"><span>mm</span></div></div>
-                        <div class="control-group"><label>Layout Color</label><input type="color" id="guide-color-picker" value="#00ffff"></div>
-                    </div>
-                    <div class="control-group checkbox-row" style="margin-top: 4px;">
-                        <input type="checkbox" id="snap-guides-baseline" checked>
-                        <label for="snap-guides-baseline">Snap Rows &amp; R-Gutter to Baseline Grid</label>
-                    </div>
-                    <div class="help-text" id="guide-snap-info">Locked: 7× lines/row (34.57 mm) · 1× gutter (4.94 mm)</div>
-
-                    <hr class="separator">
-                    <h3 class="subsection-title">Baseline Grid</h3>
-                    <div class="control-grid">
-                        <div class="control-group">
-                            <label>Color</label>
-                            <select id="baseline-color-dropdown">
-                                <option value="rgba(173, 216, 230, 0.4)">Light Blue</option>
-                                <option value="rgba(0, 255, 255, 0.4)" selected>Cyan</option>
-                                <option value="rgba(255, 0, 255, 0.4)">Magenta</option>
-                                <option value="rgba(255, 255, 0, 0.4)">Yellow</option>
-                                <option value="rgba(0, 0, 0, 0.2)">Black</option>
-                                <option value="rgba(255, 0, 0, 0.4)">Red</option>
-                                <option value="rgba(0, 255, 0, 0.4)">Green</option>
-                                <option value="rgba(255, 165, 0, 0.4)">Orange</option>
-                                <option value="rgba(128, 0, 128, 0.4)">Purple</option>
-                                <option value="rgba(128, 128, 128, 0.4)">Gray</option>
-                            </select>
-                        </div>
-                        <div class="control-group">
-                            <label>Start (Relative to Top Margin)</label>
-                            <input type="text" id="baseline-start-display" value="16 mm" disabled style="color: #999; background: #eee;">
-                        </div>
-                        <div class="control-group" style="grid-column: 1 / -1;">
-                            <label>Increment Every</label>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <select id="baseline-increment-type" style="flex: 1;">
-                                    <option value="auto">Relative to Font Size</option>
-                                    <option value="custom">Custom</option>
-                                </select>
-                                <div class="input-suffix" id="baseline-custom-wrapper" style="display: none; width: 100px;">
-                                    <input type="number" id="baseline-custom-value" value="4.9" step="0.1"><span>mm</span>
-                                </div>
+                            <div class="control-group">
+                                <label for="body-start-page">Start Body Text on Page</label>
+                                <input type="number" id="body-start-page" value="1" min="1">
                             </div>
                         </div>
                     </div>
 
-                    <div class="control-group checkbox-row" style="margin-top: 8px;">
-                        <input type="checkbox" id="toggle-guides" checked>
-                        <label for="toggle-guides">Show Structure Guides</label>
-                    </div>
-                    <div class="control-group checkbox-row">
-                        <input type="checkbox" id="show-extras" checked>
-                        <label for="show-extras">Show Extras <span style="opacity: 0.5; font-size: 10px; margin-left: 4px;">(Press W)</span></label>
-                    </div>
-                    <div class="control-group checkbox-row">
-                        <input type="checkbox" id="baseline-grid" checked>
-                        <label for="baseline-grid">Show Baseline Grid (14pt)</label>
+                    <!-- Table of Contents Card -->
+                    <div class="gestalt-card">
+                        <div class="card-header">
+                            <h3 class="subsection-title">Automated Table of Contents</h3>
+                        </div>
+                        <button id="btn-toggle-toc" class="primary-btn" style="padding: 9px; font-size: 11px;">Generate TOC</button>
+                        
+                        <div id="toc-settings" style="display: none; flex-direction: column; gap: 10px; margin-top: 4px;">
+                            <div class="control-group">
+                                <label>TOC Layout Style</label>
+                                <select id="toc-layout-style">
+                                    <option value="single">1-Page (Title &amp; List Combined)</option>
+                                    <option value="spread" selected>2-Page Spread (Title Left / List Right)</option>
+                                </select>
+                            </div>
+                            <div class="control-grid">
+                                <div class="control-group">
+                                    <label>List Type</label>
+                                    <select id="toc-list-type">
+                                        <option value="bullet">Bullet List</option>
+                                        <option value="numbered">Numbered List</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label>Start on Page</label>
+                                    <input type="number" id="toc-start-page" value="3" min="1">
+                                </div>
+                            </div>
+                            <div class="control-group" id="toc-bullet-type-group">
+                                <label>TOC Bullet Marker</label>
+                                <select id="toc-bullet-type">
+                                    <option value="•">Solid Circle ( • )</option>
+                                    <option value="*">Asterisk ( * )</option>
+                                    <option value="-">Hyphen ( - )</option>
+                                    <option value="custom">Custom Symbol (Upload Image)</option>
+                                </select>
+                            </div>
+                            <div class="drop-zone" id="toc-custom-bullet-drop" style="display: none;">
+                                <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                                Drop SVG/PNG Bullet Here
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </details>
 
-                <div class="gestalt-card">
-                    <h3 class="subsection-title">Pagination</h3>
-                    <div class="control-group checkbox-row" style="margin-bottom: 8px;">
-                        <input type="checkbox" id="page-numbers" checked>
-                        <label for="page-numbers">Enable Page Numbering</label>
-                    </div>
-                    <div class="control-grid">
-                        <div class="control-group"><label>Show from Page</label><input type="number" id="page-show-start" value="1"></div>
-                        <div class="control-group"><label>Show until Page</label><input type="number" id="page-show-end" value="999"></div>
-                        <div class="control-group" style="grid-column: 1 / -1;"><label>Start counting at #</label><input type="number" id="page-count-start" value="1"></div>
-                    </div>
-                </div>
-
-            </div>
-        </details>
-
-        <!-- 2. Paragraph Styles -->
-        <details class="accordion">
-            <summary>2. Typography <span class="arrow"></span></summary>
-            <div class="accordion-content">
-                <!-- Font Assignment Card -->
-                <div class="gestalt-card">
-                    <div class="control-group checkbox-row">
-                        <input type="checkbox" id="auto-styles" checked>
-                        <label for="auto-styles">Automatic Paragraph Styles</label>
-                    </div>
-                    <div class="help-text" style="margin-bottom: 12px; margin-top:-4px;">Uncheck to configure custom styles individually.</div>
-                    
-                    <div id="auto-style-section">
-                        <div class="drop-zone" id="global-font-drop">
-                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                            Drop Font Family Here (.ttf, .woff2)
+            <!-- 02. Page Geometry & Margins -->
+            <details class="accordion" open>
+                <summary>
+                    <span class="summary-left"><span class="step-num">02</span> Page &amp; Margins</span>
+                    <span class="summary-right"><span class="summary-meta" id="meta-page-format">A5 · Spreads</span><span class="arrow"></span></span>
+                </summary>
+                <div class="accordion-content">
+                    <!-- Format & Spreads -->
+                    <div class="gestalt-card">
+                        <h3 class="subsection-title">Format &amp; Binding</h3>
+                        <div class="control-grid">
+                            <div class="control-group">
+                                <label for="doc-preset">DIN Preset</label>
+                                <select id="doc-preset">
+                                    <option value="A4">A4 (210 × 297)</option>
+                                    <option value="A5" selected>A5 (148 × 210)</option>
+                                    <option value="A6">A6 (105 × 148)</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="doc-layout">Binding Flow</label>
+                                <select id="doc-layout">
+                                    <option value="facing" selected>Facing Spreads</option>
+                                    <option value="single">Single Pages</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <div id="custom-style-section" style="display: none;">
-                        <div class="style-row-container" id="custom-styles-container"></div>
+                    <!-- Page Margins -->
+                    <div class="gestalt-card">
+                        <h3 class="subsection-title">Page Margins</h3>
+                        <div class="control-grid">
+                            <div class="control-group"><label for="margin-top">Top</label><div class="input-suffix"><input type="number" id="margin-top" value="16"><span>mm</span></div></div>
+                            <div class="control-group"><label for="margin-bottom">Bottom</label><div class="input-suffix"><input type="number" id="margin-bottom" value="24"><span>mm</span></div></div>
+                            <div class="control-group"><label for="margin-inside">Inside (Spine)</label><div class="input-suffix"><input type="number" id="margin-inside" value="16"><span>mm</span></div></div>
+                            <div class="control-group"><label for="margin-outside">Outside (Fore-edge)</label><div class="input-suffix"><input type="number" id="margin-outside" value="20"><span>mm</span></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Folios & Pagination -->
+                    <div class="gestalt-card">
+                        <div class="card-header">
+                            <h3 class="subsection-title">Folios (Page Numbers)</h3>
+                            <div class="control-group checkbox-row" style="flex:0;">
+                                <input type="checkbox" id="page-numbers" checked>
+                                <label for="page-numbers">Show</label>
+                            </div>
+                        </div>
+                        <div class="control-grid">
+                            <div class="control-group"><label for="page-show-start">From Page</label><input type="number" id="page-show-start" value="1"></div>
+                            <div class="control-group"><label for="page-show-end">Until Page</label><input type="number" id="page-show-end" value="999"></div>
+                            <div class="control-group" style="grid-column: 1 / -1;"><label for="page-count-start">Start Numbering At #</label><input type="number" id="page-count-start" value="1"></div>
+                        </div>
                     </div>
                 </div>
+            </details>
 
-                <!-- Paragraph Formatting Replica Card -->
-                <div class="gestalt-card">
-                    <h3 class="subsection-title">Paragraph Formatting</h3>
-                    <div class="alignment-toolbar" id="text-align-toolbar">
-                        <button class="align-btn" data-align="left" data-last="auto" title="Align Left">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2 4h20v3H2z M2 9h15v3H2z M2 14h20v3H2z M2 19h10v3H2z"/></svg>
-                        </button>
-                        <button class="align-btn" data-align="center" data-last="auto" title="Align Center">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2 4h20v3H2z M4.5 9h15v3H4.5z M2 14h20v3H2z M7 19h10v3H7z"/></svg>
-                        </button>
-                        <button class="align-btn" data-align="right" data-last="auto" title="Align Right">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2 4h20v3H2z M7 9h15v3H7z M2 14h20v3H2z M12 19h10v3H12z"/></svg>
-                        </button>
-                        <button class="align-btn active" data-align="justify" data-last="left" title="Justify Left Last">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2 4h20v3H2z M2 9h20v3H2z M2 14h20v3H2z M2 19h10v3H2z"/></svg>
-                        </button>
-                        <button class="align-btn" data-align="justify" data-last="center" title="Justify Center Last">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2 4h20v3H2z M2 9h20v3H2z M2 14h20v3H2z M7 19h10v3H7z"/></svg>
-                        </button>
-                        <button class="align-btn" data-align="justify" data-last="right" title="Justify Right Last">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2 4h20v3H2z M2 9h20v3H2z M2 14h20v3H2z M12 19h10v3H12z"/></svg>
-                        </button>
-                        <button class="align-btn" data-align="justify" data-last="justify" title="Justify All">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2 4h20v3H2z M2 9h20v3H2z M2 14h20v3H2z M2 19h20v3H2z"/></svg>
-                        </button>
+            <!-- 03. Grid & Baseline Architecture -->
+            <details class="accordion" open>
+                <summary>
+                    <span class="summary-left"><span class="step-num">03</span> Grid &amp; Baseline</span>
+                    <span class="summary-right"><span class="summary-meta" id="meta-grid-info">14pt · 2×4</span><span class="arrow"></span></span>
+                </summary>
+                <div class="accordion-content">
+                    <!-- Text Columns -->
+                    <div class="gestalt-card">
+                        <h3 class="subsection-title">Text Flow Columns</h3>
+                        <div class="control-grid">
+                            <div class="control-group"><label for="col-count">Columns</label><div class="input-suffix"><input type="number" id="col-count" value="1" min="1"><span>col</span></div></div>
+                            <div class="control-group"><label for="col-gutter">Column Gutter</label><div class="input-suffix"><input type="number" id="col-gutter" step="0.1" value="4.2"><span>mm</span></div></div>
+                        </div>
                     </div>
-                    
-                    <hr class="separator">
-                    
-                    <div class="control-grid">
-                        <div class="control-group"><label>Left Indent</label><div class="input-suffix"><input type="number" id="p-ml" value="0"><span>mm</span></div></div>
-                        <div class="control-group"><label>Right Indent</label><div class="input-suffix"><input type="number" id="p-mr" value="0"><span>mm</span></div></div>
-                    </div>
-                    <div class="control-grid">
-                        <div class="control-group"><label>First Line Indent</label><div class="input-suffix"><input type="number" id="p-ti" value="5"><span>mm</span></div></div>
-                        <div class="control-group"><label>Last Line Right</label><div class="input-suffix"><input type="number" id="p-llri" value="0"><span>mm</span></div></div>
-                    </div>
-                    
-                    <hr class="separator">
-                    
-                    <div class="control-group checkbox-row" style="margin-bottom: 2px;">
-                        <input type="checkbox" id="p-snap-spacing" checked>
-                        <label for="p-snap-spacing">Snap Spacing to Baseline Grid</label>
-                    </div>
-                    <div class="control-grid">
-                        <div class="control-group"><label>Space Before</label><div class="input-suffix"><input type="number" id="p-mt" value="0" min="0" step="0.5"><span>mm</span></div></div>
-                        <div class="control-group"><label>Space After</label><div class="input-suffix"><input type="number" id="p-mb" value="0" min="0" step="0.5"><span>mm</span></div></div>
-                    </div>
-                    <div class="help-text" id="p-spacing-snap-info">Locked: 0× before (0.00 mm) · 0× after (0.00 mm)</div>
 
-                    <hr class="separator">
+                    <!-- Baseline Grid -->
+                    <div class="gestalt-card">
+                        <div class="card-header">
+                            <h3 class="subsection-title">Baseline Grid</h3>
+                            <div class="control-group checkbox-row" style="flex:0;">
+                                <input type="checkbox" id="baseline-grid" checked>
+                                <label for="baseline-grid">Visible</label>
+                            </div>
+                        </div>
+                        <div class="control-grid">
+                            <div class="control-group">
+                                <label for="baseline-increment-type">Increment</label>
+                                <select id="baseline-increment-type">
+                                    <option value="auto">Auto (14pt Leading)</option>
+                                    <option value="custom">Custom (mm)</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="baseline-color-dropdown">Line Color</label>
+                                <select id="baseline-color-dropdown">
+                                    <option value="rgba(173, 216, 230, 0.4)">Light Blue</option>
+                                    <option value="rgba(0, 255, 255, 0.4)" selected>Cyan</option>
+                                    <option value="rgba(255, 0, 255, 0.4)">Magenta</option>
+                                    <option value="rgba(255, 255, 0, 0.4)">Yellow</option>
+                                    <option value="rgba(0, 0, 0, 0.2)">Black</option>
+                                    <option value="rgba(255, 0, 0, 0.4)">Red</option>
+                                    <option value="rgba(0, 255, 0, 0.4)">Green</option>
+                                    <option value="rgba(255, 165, 0, 0.4)">Orange</option>
+                                    <option value="rgba(128, 0, 128, 0.4)">Purple</option>
+                                    <option value="rgba(128, 128, 128, 0.4)">Gray</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control-grid">
+                            <div class="control-group" id="baseline-custom-wrapper" style="display: none;">
+                                <label for="baseline-custom-value">Custom Step</label>
+                                <div class="input-suffix">
+                                    <input type="number" id="baseline-custom-value" value="4.9" step="0.1"><span>mm</span>
+                                </div>
+                            </div>
+                            <div class="control-group" style="grid-column: 1 / -1;">
+                                <label for="baseline-start-display">Grid Origin (Top Margin)</label>
+                                <input type="text" id="baseline-start-display" value="16 mm" disabled style="color: #888; background: #efefef;">
+                            </div>
+                        </div>
+                    </div>
 
-                    <div class="control-grid">
-                        <div class="control-group"><label>Drop Cap Lines</label><div class="input-suffix"><input type="number" id="p-drop-lines" value="0"><span></span></div></div>
+                    <!-- Modular Structure Grid (Müller-Brockmann) -->
+                    <div class="gestalt-card">
+                        <div class="card-header">
+                            <h3 class="subsection-title">Modular Guides (Müller-Brockmann)</h3>
+                            <div class="control-group checkbox-row" style="flex:0;">
+                                <input type="checkbox" id="toggle-guides" checked>
+                                <label for="toggle-guides">Visible</label>
+                            </div>
+                        </div>
+                        <div class="control-grid">
+                            <div class="control-group"><label for="guide-rows">Rows</label><div class="input-suffix"><input type="number" id="guide-rows" value="4" min="1"><span>row</span></div></div>
+                            <div class="control-group"><label for="guide-rgutter">Row Gutter</label><div class="input-suffix"><input type="number" id="guide-rgutter" value="4" min="0" step="0.5"><span>mm</span></div></div>
+                            <div class="control-group"><label for="guide-cols">Columns</label><div class="input-suffix"><input type="number" id="guide-cols" value="2" min="1"><span>col</span></div></div>
+                            <div class="control-group"><label for="guide-cgutter">Col Gutter</label><div class="input-suffix"><input type="number" id="guide-cgutter" value="4" min="0" step="0.5"><span>mm</span></div></div>
+                        </div>
+                        <div class="control-row" style="align-items: center; justify-content: space-between;">
+                            <div class="control-group checkbox-row" style="flex: 1;">
+                                <input type="checkbox" id="snap-guides-baseline" checked>
+                                <label for="snap-guides-baseline">Snap Rows &amp; R-Gutter to Baseline</label>
+                            </div>
+                            <div style="width: 56px;">
+                                <input type="color" id="guide-color-picker" value="#00ffff" title="Guide Overlay Color">
+                            </div>
+                        </div>
+                        <div class="help-text" id="guide-snap-info">Locked: 7× lines/row (34.57 mm) · 1× gutter (4.94 mm)</div>
+
+                        <!-- Hidden master checkbox for W shortcut compatibility -->
+                        <div class="control-group checkbox-row" style="display:none;">
+                            <input type="checkbox" id="show-extras" checked>
+                            <label for="show-extras">Show Extras (W)</label>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 04. Typography & Rhythm -->
+            <details class="accordion">
+                <summary>
+                    <span class="summary-left"><span class="step-num">04</span> Typography &amp; Rhythm</span>
+                    <span class="summary-right"><span class="summary-meta">10 / 14pt</span><span class="arrow"></span></span>
+                </summary>
+                <div class="accordion-content">
+                    <!-- Font Assignment Card -->
+                    <div class="gestalt-card">
+                        <div class="card-header">
+                            <h3 class="subsection-title">Typeface Assignment</h3>
+                            <div class="control-group checkbox-row" style="flex:0;">
+                                <input type="checkbox" id="auto-styles" checked>
+                                <label for="auto-styles">Global</label>
+                            </div>
+                        </div>
+                        
+                        <div id="auto-style-section">
+                            <div class="drop-zone" id="global-font-drop">
+                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                Drop Global Font (.ttf, .woff2)
+                            </div>
+                        </div>
+
+                        <div id="custom-style-section" style="display: none;">
+                            <div class="style-row-container" id="custom-styles-container"></div>
+                        </div>
+                    </div>
+
+                    <!-- Alignment & Indents Card -->
+                    <div class="gestalt-card">
+                        <h3 class="subsection-title">Alignment &amp; Indentation</h3>
+                        <div class="alignment-toolbar" id="text-align-toolbar">
+                            <button class="align-btn" data-align="left" data-last="auto" title="Align Left">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M2 4h20v3H2z M2 9h15v3H2z M2 14h20v3H2z M2 19h10v3H2z"/></svg>
+                            </button>
+                            <button class="align-btn" data-align="center" data-last="auto" title="Align Center">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M2 4h20v3H2z M4.5 9h15v3H4.5z M2 14h20v3H2z M7 19h10v3H7z"/></svg>
+                            </button>
+                            <button class="align-btn" data-align="right" data-last="auto" title="Align Right">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M2 4h20v3H2z M7 9h15v3H7z M2 14h20v3H2z M12 19h10v3H12z"/></svg>
+                            </button>
+                            <button class="align-btn active" data-align="justify" data-last="left" title="Justify Left Last">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M2 4h20v3H2z M2 9h20v3H2z M2 14h20v3H2z M2 19h10v3H2z"/></svg>
+                            </button>
+                            <button class="align-btn" data-align="justify" data-last="center" title="Justify Center Last">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M2 4h20v3H2z M2 9h20v3H2z M2 14h20v3H2z M7 19h10v3H7z"/></svg>
+                            </button>
+                            <button class="align-btn" data-align="justify" data-last="right" title="Justify Right Last">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M2 4h20v3H2z M2 9h20v3H2z M2 14h20v3H2z M12 19h10v3H12z"/></svg>
+                            </button>
+                            <button class="align-btn" data-align="justify" data-last="justify" title="Justify All">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M2 4h20v3H2z M2 9h20v3H2z M2 14h20v3H2z M2 19h20v3H2z"/></svg>
+                            </button>
+                        </div>
+
+                        <div class="control-grid">
+                            <div class="control-group"><label for="p-ti">First Line Indent</label><div class="input-suffix"><input type="number" id="p-ti" value="5"><span>mm</span></div></div>
+                            <div class="control-group"><label for="p-llri">Last Line Right</label><div class="input-suffix"><input type="number" id="p-llri" value="0"><span>mm</span></div></div>
+                            <div class="control-group"><label for="p-ml">Left Indent</label><div class="input-suffix"><input type="number" id="p-ml" value="0"><span>mm</span></div></div>
+                            <div class="control-group"><label for="p-mr">Right Indent</label><div class="input-suffix"><input type="number" id="p-mr" value="0"><span>mm</span></div></div>
+                        </div>
+
+                        <hr class="separator">
+
+                        <div class="control-grid">
+                            <div class="control-group"><label for="p-drop-lines">Drop Cap Lines</label><div class="input-suffix"><input type="number" id="p-drop-lines" value="0" min="0"><span>lines</span></div></div>
+                            <div class="control-group">
+                                <label for="bullet-style">Body List Marker</label>
+                                <select id="bullet-style">
+                                    <option value="•">Solid Circle ( • )</option>
+                                    <option value="*">Asterisk ( * )</option>
+                                    <option value="-">Hyphen ( - )</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vertical Rhythm / Paragraph Spacing Card -->
+                    <div class="gestalt-card">
+                        <div class="card-header">
+                            <h3 class="subsection-title">Vertical Rhythm (Paragraph Spacing)</h3>
+                        </div>
+                        <div class="control-group checkbox-row">
+                            <input type="checkbox" id="p-snap-spacing" checked>
+                            <label for="p-snap-spacing">Snap Spacing to Baseline Grid</label>
+                        </div>
+                        <div class="control-grid">
+                            <div class="control-group"><label for="p-mt">Space Before</label><div class="input-suffix"><input type="number" id="p-mt" value="0" min="0" step="0.5"><span>mm</span></div></div>
+                            <div class="control-group"><label for="p-mb">Space After</label><div class="input-suffix"><input type="number" id="p-mb" value="0" min="0" step="0.5"><span>mm</span></div></div>
+                        </div>
+                        <div class="help-text" id="p-spacing-snap-info">Locked: 0× before (0.00 mm) · 0× after (0.00 mm)</div>
+                    </div>
+
+                    <!-- H&J Engine Card -->
+                    <div class="gestalt-card">
+                        <div class="card-header">
+                            <h3 class="subsection-title">Hyphenation &amp; Justification (H&amp;J)</h3>
+                        </div>
                         <div class="control-group">
-                            <label>Bullet Style</label>
-                            <select id="bullet-style">
-                                <option value="•">Solid Circle ( • )</option>
-                                <option value="*">Asterisk ( * )</option>
-                                <option value="-">Hyphen ( - )</option>
+                            <label for="doc-lang">Language Dictionary (HarfBuzz)</label>
+                            <select id="doc-lang">
+                                <option value="de" selected>German (de)</option>
+                                <option value="en">English (en)</option>
                             </select>
                         </div>
+
+                        <hr class="separator">
+
+                        <div class="control-group checkbox-row">
+                            <input type="checkbox" id="justification-enable" checked>
+                            <label for="justification-enable">Custom Word Spacing</label>
+                        </div>
+                        <div class="control-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                            <div class="control-group"><label for="word-space-min">Min</label><div class="input-suffix" id="ws-min-wrap"><input type="number" id="word-space-min" value="90"><span>%</span></div></div>
+                            <div class="control-group"><label for="word-space-des">Desired</label><div class="input-suffix" id="ws-des-wrap"><input type="number" id="word-space-des" value="95"><span>%</span></div></div>
+                            <div class="control-group"><label for="word-space-max">Max</label><div class="input-suffix" id="ws-max-wrap"><input type="number" id="word-space-max" value="100"><span>%</span></div></div>
+                        </div>
+
+                        <hr class="separator">
+
+                        <div class="control-group checkbox-row">
+                            <input type="checkbox" id="hyph-enable" checked>
+                            <label for="hyph-enable">Automatic Hyphenation</label>
+                        </div>
+                        <div class="control-grid">
+                            <div class="control-group"><label for="hyph-words">Min Word</label><div class="input-suffix"><input type="number" id="hyph-words" value="5"><span>ch</span></div></div>
+                            <div class="control-group"><label for="hyph-limit">Max Consecutive</label><div class="input-suffix"><input type="number" id="hyph-limit" value="3"><span>lines</span></div></div>
+                            <div class="control-group"><label for="hyph-after">After First</label><div class="input-suffix"><input type="number" id="hyph-after" value="2"><span>ch</span></div></div>
+                            <div class="control-group"><label for="hyph-before">Before Last</label><div class="input-suffix"><input type="number" id="hyph-before" value="2"><span>ch</span></div></div>
+                            <div class="control-group" style="grid-column: 1 / -1;"><label for="hyph-zone">Hyphenation Zone</label><input type="text" id="hyph-zone" value="16 mm"></div>
+                        </div>
+
+                        <div class="control-group slider-group">
+                            <div class="slider-labels"><span>Better Spacing</span><span>Fewer Hyphens</span></div>
+                            <input type="range" min="1" max="10" value="5" class="slider" title="Algorithm Priority">
+                        </div>
+
+                        <div class="control-group checkbox-row"><input type="checkbox" id="hyph-cap" checked><label for="hyph-cap">Hyphenate Capitalized Words</label></div>
+                        <div class="control-group checkbox-row"><input type="checkbox" id="hyph-last" checked><label for="hyph-last">Hyphenate Last Word</label></div>
+                        <div class="control-group checkbox-row"><input type="checkbox" id="hyph-col" checked><label for="hyph-col">Hyphenate Across Column</label></div>
                     </div>
                 </div>
+            </details>
+        </div>
 
-                <!-- Justification Card -->
-                <div class="gestalt-card">
-                    <h3 class="subsection-title">Justification</h3>
-                    <div class="control-group checkbox-row" style="margin-bottom: 12px;">
-                        <input type="checkbox" id="justification-enable" checked>
-                        <label for="justification-enable">Enable Justification Spacing</label>
-                    </div>
-                    
-                    <div class="control-group" style="margin-bottom: 8px;">
-                        <label>Minimum Word Spacing</label>
-                        <div class="input-suffix" id="ws-min-wrap">
-                            <input type="number" id="word-space-min" value="90"><span>%</span>
-                        </div>
-                    </div>
-                    
-                    <div class="control-group" style="margin-bottom: 8px;">
-                        <label>Desired Word Spacing</label>
-                        <div class="input-suffix" id="ws-des-wrap">
-                            <input type="number" id="word-space-des" value="95"><span>%</span>
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label>Maximum Word Spacing</label>
-                        <div class="input-suffix" id="ws-max-wrap">
-                            <input type="number" id="word-space-max" value="100"><span>%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- InDesign H&J Port Card -->
-                <div class="gestalt-card">
-                    <h3 class="subsection-title">Hyphenation & Language</h3>
-                    <div class="control-group" style="margin-bottom: 12px;">
-                        <label>Dictionary (Native HarfBuzz)</label>
-                        <select id="doc-lang">
-                            <option value="de" selected>German</option>
-                            <option value="en">English (US/UK)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="control-group checkbox-row" style="margin-bottom: 12px;">
-                        <input type="checkbox" id="hyph-enable" checked>
-                        <label for="hyph-enable">Hyphenate</label>
-                    </div>
-                    
-                    <div class="control-grid">
-                        <div class="control-group"><label>Words with at Least:</label><div class="input-suffix"><input type="number" id="hyph-words" value="5"><span>letters</span></div></div>
-                        <div class="control-group"><label>After First:</label><div class="input-suffix"><input type="number" id="hyph-after" value="2"><span>letters</span></div></div>
-                        <div class="control-group"><label>Before Last:</label><div class="input-suffix"><input type="number" id="hyph-before" value="2"><span>letters</span></div></div>
-                        <div class="control-group"><label>Hyphen Limit:</label><div class="input-suffix"><input type="number" id="hyph-limit" value="3"><span>hyphens</span></div></div>
-                        <div class="control-group" style="grid-column: 1 / -1;"><label>Hyphenation Zone:</label><div class="input-suffix"><input type="text" id="hyph-zone" value="16 mm"></div></div>
-                    </div>
-                    
-                    <div class="control-group slider-group" style="margin: 16px 0;">
-                        <div class="slider-labels"><span>Better Spacing</span><span>Fewer Hyphens</span></div>
-                        <input type="range" min="1" max="10" value="5" class="slider" title="Algorithm Priority">
-                    </div>
-
-                    <div class="control-group checkbox-row"><input type="checkbox" id="hyph-cap" checked><label for="hyph-cap">Hyphenate Capitalized Words</label></div>
-                    <div class="control-group checkbox-row"><input type="checkbox" id="hyph-last" checked><label for="hyph-last">Hyphenate Last Word</label></div>
-                    <div class="control-group checkbox-row"><input type="checkbox" id="hyph-col" checked><label for="hyph-col">Hyphenate Across Column</label></div>
-                </div>
+        <!-- PINNED OUTPUT & PREFLIGHT FOOTER -->
+        <div class="sidebar-footer">
+            <div class="footer-preset-row">
+                <select title="Adobe PDF Preset"><option>[High Quality Print]</option><option>[Press Quality]</option></select>
+                <select title="PDF Compatibility"><option>PDF/X-4:2010</option></select>
             </div>
-        </details>
-
-        <!-- 3. Export -->
-        <details class="accordion">
-            <summary>3. OUTPUT <span class="arrow"></span></summary>
-            <div class="accordion-content">
-                <div class="gestalt-card">
-                    <button id="btn-preflight" class="primary-btn" style="background-color: #1a1a1a; margin-bottom: 8px;">Preflight Document</button>
-                    <div class="control-group">
-                        <label>Adobe PDF Preset</label>
-                        <select><option>[High Quality Print]</option><option>[Press Quality]</option></select>
-                    </div>
-                    <div class="control-group">
-                        <label>Compatibility</label>
-                        <select><option>PDF/X-4:2010 (Acrobat 7)</option></select>
-                    </div>
-                    <button id="btn-export" class="primary-btn">Export PDF (Direct)</button>
-                </div>
+            <div class="footer-btn-row">
+                <button id="btn-preflight" class="primary-btn secondary-btn">Preflight &amp; Impose</button>
+                <button id="btn-export" class="primary-btn">Export PDF</button>
             </div>
-        </details>
+        </div>
     </aside>
 
+    <!-- MAIN WORKSPACE & FLOATING HUD -->
     <main id="workspace">
+        <!-- Floating Canvas Toolbar -->
+        <div id="workspace-hud" onmousedown="event.stopPropagation()">
+            <div class="hud-group">
+                <button type="button" class="hud-pill active" id="hud-btn-guides" title="Toggle Müller-Brockmann Structure Guides">
+                    <span class="dot"></span> Guides
+                </button>
+                <button type="button" class="hud-pill active" id="hud-btn-baseline" title="Toggle Baseline Grid">
+                    <span class="dot"></span> Baseline
+                </button>
+                <button type="button" class="hud-pill" id="hud-btn-preview" title="Toggle Clean Print Preview (Shortcut: W)">
+                    Preview <span class="hud-kbd">W</span>
+                </button>
+            </div>
+
+            <div class="hud-divider"></div>
+
+            <div class="hud-group">
+                <button type="button" class="hud-zoom-btn" id="hud-zoom-out" title="Zoom Out">−</button>
+                <button type="button" id="hud-zoom-reset" title="Click to Reset Zoom (80%)">80%</button>
+                <button type="button" class="hud-zoom-btn" id="hud-zoom-in" title="Zoom In">+</button>
+            </div>
+
+            <div class="hud-divider"></div>
+
+            <button type="button" id="unfold-btn">
+                ✎ Text Editor <span class="hud-kbd" style="background:rgba(0,0,0,0.12); color:inherit;">T</span>
+            </button>
+        </div>
+
         <div id="canvas">
             <div id="document-container" lang="de" class="facing-enabled show-guides show-baseline snap-guides-baseline">
                 <!-- Pages flow here procedurally -->
@@ -1081,8 +1394,8 @@
     <!-- PIP Text Editor -->
     <aside id="pip-editor">
         <header>
-            <h2>Text & Style Editor</h2>
-            <span>Click outside to close</span>
+            <h2>Text &amp; Style Editor</h2>
+            <span>Click outside or press Esc to close</span>
         </header>
         <div id="pip-toolbar">
             <button class="pip-btn" data-tag="H1">H1</button>
@@ -1237,7 +1550,9 @@
                 this.updateCanvasTransform();
                 
                 window.addEventListener('keydown', (e) => {
-                    if (e.key.toLowerCase() === 'w' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
+                    const activeTag = document.activeElement.tagName;
+                    const isInput = activeTag === 'INPUT' || activeTag === 'SELECT' || document.activeElement.isContentEditable;
+                    if (e.key.toLowerCase() === 'w' && !isInput) {
                         const cb = document.getElementById('show-extras');
                         cb.checked = !cb.checked;
                         cb.dispatchEvent(new Event('change'));
@@ -1280,29 +1595,54 @@
                     }
                     this.updateCanvasTransform();
                 }, { passive: false });
+
+                // HUD Zoom Controls
+                document.getElementById('hud-zoom-in').addEventListener('click', () => {
+                    this.scale = Math.min(5, +(this.scale + 0.1).toFixed(2));
+                    this.updateCanvasTransform();
+                });
+                document.getElementById('hud-zoom-out').addEventListener('click', () => {
+                    this.scale = Math.max(0.1, +(this.scale - 0.1).toFixed(2));
+                    this.updateCanvasTransform();
+                });
+                document.getElementById('hud-zoom-reset').addEventListener('click', () => {
+                    this.scale = 0.8;
+                    this.translateX = 0;
+                    this.translateY = 0;
+                    this.updateCanvasTransform();
+                });
                 
-                // UNFOLD Button Setup
+                // UNFOLD / Editor Button Setup
                 const unfoldBtn = document.getElementById('unfold-btn');
+                const sideEditorBtn = document.getElementById('btn-open-editor-side');
                 const tooltip = document.getElementById('unfold-tooltip');
+
                 unfoldBtn.addEventListener('mouseenter', () => {
-                    unfoldBtn.style.color = 'rgb(0,0,255)';
                     tooltip.style.display = 'block';
                 });
                 unfoldBtn.addEventListener('mouseleave', () => {
-                    unfoldBtn.style.color = '#555';
                     tooltip.style.display = 'none';
                 });
                 unfoldBtn.addEventListener('mousemove', (e) => {
-                    tooltip.style.left = (e.clientX - 110) + 'px';
-                    tooltip.style.top = (e.clientY + 20) + 'px';
+                    tooltip.style.left = (e.clientX - 60) + 'px';
+                    tooltip.style.top = (e.clientY + 24) + 'px';
                 });
                 unfoldBtn.addEventListener('click', () => {
                     this.pipPanel.classList.add('open');
                 });
+                if (sideEditorBtn) {
+                    sideEditorBtn.addEventListener('click', () => {
+                        this.pipPanel.classList.add('open');
+                    });
+                }
             }
 
             updateCanvasTransform() {
                 this.canvas.style.transform = `translate(calc(-50% + ${this.translateX}px), calc(-50% + ${this.translateY}px)) scale(${this.scale})`;
+                const zoomReadout = document.getElementById('hud-zoom-reset');
+                if (zoomReadout) {
+                    zoomReadout.textContent = `${Math.round(this.scale * 100)}%`;
+                }
             }
 
             updatePFCanvasTransform() {
@@ -1332,6 +1672,7 @@
                     btn.addEventListener('mousedown', e => e.preventDefault());
                     btn.addEventListener('click', () => {
                         const tag = btn.dataset.tag;
+                        if (!tag) return;
                         if (tag === 'UL') {
                             document.execCommand('insertUnorderedList', false, null);
                         } else {
@@ -1373,7 +1714,7 @@
                 });
 
                 document.addEventListener('mousedown', (e) => {
-                    if (this.pipPanel.classList.contains('open') && !this.pipPanel.contains(e.target)) {
+                    if (this.pipPanel.classList.contains('open') && !this.pipPanel.contains(e.target) && !e.target.closest('#unfold-btn') && !e.target.closest('#btn-open-editor-side')) {
                         this.pipPanel.classList.remove('open');
                         this.pipPanel.classList.remove('active');
                     }
@@ -1641,6 +1982,13 @@
             }
 
             initUIListeners() {
+                const updatePageMetaBadge = () => {
+                    const preset = document.getElementById('doc-preset').value;
+                    const layout = document.getElementById('doc-layout').value === 'facing' ? 'Spreads' : 'Single';
+                    const badge = document.getElementById('meta-page-format');
+                    if (badge) badge.textContent = `${preset} · ${layout}`;
+                };
+
                 document.getElementById('doc-layout').addEventListener('change', (e) => {
                     if (e.target.value === 'facing') {
                         this.docContainer.classList.add('facing-enabled');
@@ -1649,6 +1997,7 @@
                         this.docContainer.classList.remove('facing-enabled');
                         this.docContainer.classList.add('facing-disabled');
                     }
+                    updatePageMetaBadge();
                 });
 
                 const hexToRgba = (hex, alpha) => {
@@ -1709,11 +2058,17 @@
                 const updateStructureGrid = () => {
                     const snap = document.getElementById('snap-guides-baseline').checked;
                     const rows = Math.max(1, parseInt(document.getElementById('guide-rows').value) || 1);
+                    const cols = Math.max(1, parseInt(document.getElementById('guide-cols').value) || 1);
                     const rawGutterMm = Math.max(0, parseFloat(document.getElementById('guide-rgutter').value) || 0);
                     const incMm = getBaselineIncrementMm();
                     const infoEl = document.getElementById('guide-snap-info');
+                    const gridMeta = document.getElementById('meta-grid-info');
 
                     document.documentElement.style.setProperty('--guide-rows', rows);
+                    if (gridMeta) {
+                        const stepLabel = baseIncType.value === 'auto' ? '14pt' : `${baseCustomVal.value}mm`;
+                        gridMeta.textContent = `${stepLabel} · ${cols}×${rows}`;
+                    }
 
                     if (snap) {
                         this.docContainer.classList.add('snap-guides-baseline');
@@ -1788,6 +2143,7 @@
                     const sizes = { 'A4': ['210mm', '297mm'], 'A5': ['148mm', '210mm'], 'A6': ['105mm', '148mm'] };
                     document.documentElement.style.setProperty('--doc-width', sizes[e.target.value][0]);
                     document.documentElement.style.setProperty('--doc-height', sizes[e.target.value][1]);
+                    updatePageMetaBadge();
                     updateStructureGrid();
                     this.flowTextToPages();
                 });
@@ -1835,21 +2191,51 @@
                 document.getElementById('guide-cols').addEventListener('input', (e) => {
                     const cols = Math.max(1, parseInt(e.target.value) || 1);
                     document.documentElement.style.setProperty('--guide-cols', cols);
+                    updateStructureGrid();
                     this.rebuildGridOverlayCells();
                 });
 
                 updateStructureGrid();
 
-                document.getElementById('toggle-guides').addEventListener('change', (e) => {
-                    e.target.checked ? this.docContainer.classList.add('show-guides') : this.docContainer.classList.remove('show-guides');
+                // Two-way sync between Sidebar Checkboxes and Floating HUD Pills
+                const toggleGuidesCb = document.getElementById('toggle-guides');
+                const baselineGridCb = document.getElementById('baseline-grid');
+                const showExtrasCb = document.getElementById('show-extras');
+
+                const hudBtnGuides = document.getElementById('hud-btn-guides');
+                const hudBtnBaseline = document.getElementById('hud-btn-baseline');
+                const hudBtnPreview = document.getElementById('hud-btn-preview');
+
+                const syncViewStates = () => {
+                    const extrasVisible = showExtrasCb.checked;
+                    document.body.classList.toggle('hide-extras', !extrasVisible);
+                    this.docContainer.classList.toggle('show-guides', toggleGuidesCb.checked);
+                    this.docContainer.classList.toggle('show-baseline', baselineGridCb.checked);
+
+                    hudBtnGuides.classList.toggle('active', extrasVisible && toggleGuidesCb.checked);
+                    hudBtnBaseline.classList.toggle('active', extrasVisible && baselineGridCb.checked);
+                    hudBtnPreview.classList.toggle('active', !extrasVisible);
+                };
+
+                toggleGuidesCb.addEventListener('change', syncViewStates);
+                baselineGridCb.addEventListener('change', syncViewStates);
+                showExtrasCb.addEventListener('change', syncViewStates);
+
+                hudBtnGuides.addEventListener('click', () => {
+                    if (!showExtrasCb.checked) showExtrasCb.checked = true;
+                    toggleGuidesCb.checked = !toggleGuidesCb.checked;
+                    syncViewStates();
                 });
 
-                document.getElementById('show-extras').addEventListener('change', (e) => {
-                    e.target.checked ? document.body.classList.remove('hide-extras') : document.body.classList.add('hide-extras');
+                hudBtnBaseline.addEventListener('click', () => {
+                    if (!showExtrasCb.checked) showExtrasCb.checked = true;
+                    baselineGridCb.checked = !baselineGridCb.checked;
+                    syncViewStates();
                 });
-                
-                document.getElementById('baseline-grid').addEventListener('change', (e) => {
-                    e.target.checked ? this.docContainer.classList.add('show-baseline') : this.docContainer.classList.remove('show-baseline');
+
+                hudBtnPreview.addEventListener('click', () => {
+                    showExtrasCb.checked = !showExtrasCb.checked;
+                    syncViewStates();
                 });
 
                 const autoStylesCb = document.getElementById('auto-styles');
@@ -2000,7 +2386,7 @@
                     tocCustomDrop.classList.remove('dragover');
                     const file = e.dataTransfer.files[0];
                     if (file && file.type.match('image.*')) {
-                        tocCustomDrop.innerHTML = `<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--primary-blue);margin-bottom:8px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Loaded: ${file.name}`;
+                        tocCustomDrop.innerHTML = `<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--primary-blue);"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Loaded: ${file.name}`;
                         tocCustomDrop.dataset.loadedUrl = URL.createObjectURL(file);
                         this.generateTOC();
                     }
