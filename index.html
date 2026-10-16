@@ -51,10 +51,12 @@
             --guide-fill-color: rgba(255, 0, 255, 0.1);
             --baseline-color: rgba(0, 255, 255, 0.4);
 
-            /* Typography & TOC Variables */
+            /* Typography, TOC & Running Header Variables */
             --bullet-char: "• ";
             --toc-indent-step: 5mm;
             --toc-major-gap: 0px;
+            --rh-offset: 5.5mm;
+            --rh-font-size: 7.5pt;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -778,7 +780,6 @@
             content: none !important;
         }
 
-        /* Baseline-quantized spacing before major TOC chapters */
         .page ul.toc-list li.toc-entry.toc-major-spaced {
             margin-top: var(--toc-major-gap, 0px);
         }
@@ -786,7 +787,6 @@
             margin-top: 0 !important;
         }
 
-        /* Major Entry Visual Styles (Zero height distortion via inset box-shadow) */
         .page ul.toc-list li.toc-entry.toc-style-bold-rule {
             font-weight: 700;
             box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.22);
@@ -804,7 +804,6 @@
             font-weight: 400;
         }
 
-        /* Sub-level entries */
         .page ul.toc-list li.toc-entry.toc-sub-entry {
             font-weight: 400;
             color: #2a2a2a;
@@ -832,7 +831,6 @@
             overflow-wrap: break-word;
         }
 
-        /* Tab Leader Variations */
         .toc-entry-leader {
             flex: 1 1 12pt;
             margin: 0 6pt;
@@ -866,7 +864,6 @@
             min-width: 14pt;
         }
 
-        /* Alternative Folio Alignments */
         .page ul.toc-list li.toc-entry.toc-folio-adjacent .toc-entry-leader {
             display: none;
         }
@@ -897,6 +894,71 @@
         .page ul.toc-list li.toc-entry.toc-folio-hidden .toc-entry-leader,
         .page ul.toc-list li.toc-entry.toc-folio-hidden .toc-page-num {
             display: none;
+        }
+
+        /* --- RUNNING HEADERS (KOLUMNENTITEL) IN TOP MARGIN --- */
+        .running-header {
+            position: absolute;
+            bottom: calc(var(--doc-height) - var(--m-top) + var(--rh-offset, 5.5mm));
+            font-size: var(--rh-font-size, 7.5pt);
+            line-height: 1.2;
+            color: var(--ui-text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            pointer-events: none;
+            z-index: 60;
+            hyphens: none;
+            word-spacing: normal;
+        }
+
+        /* Horizontal bounds locked to odd/even page margins */
+        .facing-enabled .page.odd-page .running-header {
+            left: var(--m-inside);
+            right: var(--m-outside);
+        }
+        .facing-enabled .page.even-page .running-header {
+            left: var(--m-outside);
+            right: var(--m-inside);
+        }
+        .facing-disabled .page .running-header {
+            left: var(--m-inside);
+            right: var(--m-outside);
+        }
+
+        /* Alignment Modes */
+        .facing-enabled .page.even-page .running-header.rh-align-outside { text-align: left; }
+        .facing-enabled .page.odd-page .running-header.rh-align-outside { text-align: right; }
+        .facing-disabled .page .running-header.rh-align-outside { text-align: right; }
+
+        .facing-enabled .page.even-page .running-header.rh-align-inside { text-align: right; }
+        .facing-enabled .page.odd-page .running-header.rh-align-inside { text-align: left; }
+        .facing-disabled .page .running-header.rh-align-inside { text-align: left; }
+
+        .running-header.rh-align-center { text-align: center; }
+
+        /* Visual Styles */
+        .running-header.rh-style-uppercase-rule {
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+            padding-bottom: 1.4mm;
+            border-bottom: 0.75px solid rgba(0, 0, 0, 0.22);
+        }
+        .running-header.rh-style-swiss-minimal {
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+        .running-header.rh-style-uppercase-clean {
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+        }
+        .running-header.rh-style-italic-rule {
+            font-style: italic;
+            font-weight: 400;
+            padding-bottom: 1.4mm;
+            border-bottom: 0.75px solid rgba(0, 0, 0, 0.18);
         }
 
         /* Structure Grid Overlay */
@@ -1162,7 +1224,7 @@
 
         <div id="sidebar-scroll">
             <!-- 01. Manuscript & Content Flow -->
-            <details class="accordion" open>
+            <details class="accordion">
                 <summary>
                     <span class="summary-left"><span class="step-num">01</span> Manuscript &amp; TOC</span>
                     <span class="summary-right"><span class="summary-meta" id="meta-toc-status">TOC Off</span><span class="arrow"></span></span>
@@ -1323,8 +1385,8 @@
                 </div>
             </details>
 
-            <!-- 02. Page Geometry & Margins -->
-            <details class="accordion">
+            <!-- 02. Page Geometry, Margins & Running Headers -->
+            <details class="accordion" open>
                 <summary>
                     <span class="summary-left"><span class="step-num">02</span> Page &amp; Margins</span>
                     <span class="summary-right"><span class="summary-meta" id="meta-page-format">A5 · Spreads</span><span class="arrow"></span></span>
@@ -1360,6 +1422,85 @@
                             <div class="control-group"><label for="margin-bottom">Bottom</label><div class="input-suffix"><input type="number" id="margin-bottom" value="24"><span>mm</span></div></div>
                             <div class="control-group"><label for="margin-inside">Inside (Spine)</label><div class="input-suffix"><input type="number" id="margin-inside" value="16"><span>mm</span></div></div>
                             <div class="control-group"><label for="margin-outside">Outside (Fore-edge)</label><div class="input-suffix"><input type="number" id="margin-outside" value="20"><span>mm</span></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Running Headers (Kolumnentitel) Card -->
+                    <div class="gestalt-card">
+                        <div class="card-header">
+                            <h3 class="subsection-title">Running Headers (Top Margin)</h3>
+                            <div class="control-group checkbox-row" style="flex:0;">
+                                <input type="checkbox" id="rh-enable" checked>
+                                <label for="rh-enable">Enable</label>
+                            </div>
+                        </div>
+
+                        <div id="rh-settings-body" style="display: flex; flex-direction: column; gap: 10px;">
+                            <div class="control-grid">
+                                <div class="control-group">
+                                    <label for="rh-even-source">Even Page (Verso / Left)</label>
+                                    <select id="rh-even-source">
+                                        <option value="h1" selected>Active H1 (Doc Title)</option>
+                                        <option value="h2">Active H2 (Chapter)</option>
+                                        <option value="h2-h3">Active H2 — H3</option>
+                                        <option value="custom">Custom Text</option>
+                                        <option value="none">Blank (None)</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label for="rh-odd-source">Odd Page (Recto / Right)</label>
+                                    <select id="rh-odd-source">
+                                        <option value="h2" selected>Active H2 (Chapter)</option>
+                                        <option value="h1">Active H1 (Doc Title)</option>
+                                        <option value="h2-h3">Active H2 — H3</option>
+                                        <option value="custom">Custom Text</option>
+                                        <option value="none">Blank (None)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="control-group" id="rh-custom-text-group" style="display: none;">
+                                <label for="rh-custom-text">Custom Running Header Text</label>
+                                <input type="text" id="rh-custom-text" value="Mietgewerkschaft Leipzig" placeholder="Enter custom header text">
+                            </div>
+
+                            <div class="control-grid">
+                                <div class="control-group">
+                                    <label for="rh-align">Alignment</label>
+                                    <select id="rh-align">
+                                        <option value="outside" selected>Flush Outside (Outer Edge)</option>
+                                        <option value="inside">Flush Inside (Spine)</option>
+                                        <option value="center">Centered</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label for="rh-style">Typography Style</label>
+                                    <select id="rh-style">
+                                        <option value="uppercase-rule" selected>Uppercase + Rule</option>
+                                        <option value="swiss-minimal">Swiss Minimal (Clean)</option>
+                                        <option value="uppercase-clean">Uppercase Tracked</option>
+                                        <option value="italic-rule">Classic Italic + Rule</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="control-grid">
+                                <div class="control-group">
+                                    <label for="rh-start-page">Show from Page</label>
+                                    <input type="number" id="rh-start-page" value="1" min="1">
+                                </div>
+                                <div class="control-group">
+                                    <label for="rh-offset-mm">Gap Above Frame</label>
+                                    <div class="input-suffix">
+                                        <input type="number" id="rh-offset-mm" value="5.5" min="2" max="20" step="0.5"><span>mm</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="control-group checkbox-row">
+                                <input type="checkbox" id="rh-hide-opening">
+                                <label for="rh-hide-opening">Hide on H1 / TOC Opening Pages</label>
+                            </div>
                         </div>
                     </div>
 
@@ -2484,6 +2625,34 @@
 
                 updateStructureGrid();
 
+                // --- RUNNING HEADERS UI LISTENERS ---
+                const rhEnableCb = document.getElementById('rh-enable');
+                const rhSettingsBody = document.getElementById('rh-settings-body');
+                const rhEvenSel = document.getElementById('rh-even-source');
+                const rhOddSel = document.getElementById('rh-odd-source');
+                const rhCustomGroup = document.getElementById('rh-custom-text-group');
+                const rhOffsetInput = document.getElementById('rh-offset-mm');
+
+                const updateRunningHeaderUI = () => {
+                    rhSettingsBody.style.display = rhEnableCb.checked ? 'flex' : 'none';
+                    const needsCustom = rhEvenSel.value === 'custom' || rhOddSel.value === 'custom';
+                    rhCustomGroup.style.display = needsCustom ? 'flex' : 'none';
+                    const offsetMm = Math.max(1, parseFloat(rhOffsetInput.value) || 5.5);
+                    document.documentElement.style.setProperty('--rh-offset', `${offsetMm}mm`);
+                    this.queueReflow();
+                };
+
+                [
+                    'rh-enable', 'rh-even-source', 'rh-odd-source', 'rh-custom-text',
+                    'rh-align', 'rh-style', 'rh-start-page', 'rh-offset-mm', 'rh-hide-opening'
+                ].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.addEventListener('input', updateRunningHeaderUI);
+                        el.addEventListener('change', updateRunningHeaderUI);
+                    }
+                });
+
                 // Two-way sync between Sidebar Checkboxes and Floating HUD Pills
                 const toggleGuidesCb = document.getElementById('toggle-guides');
                 const baselineGridCb = document.getElementById('baseline-grid');
@@ -2865,7 +3034,6 @@
                         inlineItems.forEach((li, idx) => {
                             const text = li.innerText.trim();
                             if (!text) return;
-                            // Classify Roman numerals (I., II., III...) or "Einleitung" as Level 2 (Major Chapter), and sub-items as Level 3
                             const isRomanMajor = /^(?:[IVX]+\.|Einleitung\b)/i.test(text);
                             const level = isRomanMajor ? 2 : 3;
                             if ((level === 2 && !incH2) || (level === 3 && !incH3)) return;
@@ -2876,7 +3044,7 @@
                                 title: text,
                                 level: level,
                                 key: key,
-                                syntheticOffset: Math.floor(idx / 4) // Fallback page progression if not yet in body
+                                syntheticOffset: Math.floor(idx / 4)
                             });
                         });
                     }
@@ -2897,7 +3065,6 @@
                     if (level === 2 && !incH2) return;
                     if (level === 3 && !incH3) return;
 
-                    // If already captured via the inline TOC list, keep it linked by key
                     if (seenKeys.has(norm)) return;
 
                     seenKeys.add(norm);
@@ -2909,12 +3076,10 @@
                     });
                 });
 
-                // Determine minimum heading level present so top-level entries start at 0 indent
                 const minLevel = entries.length > 0 ? Math.min(...entries.map(e => e.level)) : 2;
 
                 this.tocTextBlocks = [];
 
-                // Optional TOC Header
                 if (titleText) {
                     const headerEl = document.createElement('h1');
                     headerEl.className = 'toc-header-title';
@@ -2927,7 +3092,6 @@
                     this.tocTextBlocks.push(hr);
                 }
 
-                // Build the Editorial TOC List
                 const listEl = document.createElement('ul');
                 listEl.className = 'toc-list';
 
@@ -2957,7 +3121,6 @@
                     li.dataset.headingKey = entry.key;
                     li.dataset.syntheticOffset = entry.syntheticOffset !== undefined ? entry.syntheticOffset : Math.floor(index / 4);
 
-                    // Optional Prefix / Numbering / Marker
                     let prefixHTML = '';
                     let displayTitle = entry.title;
 
@@ -2971,7 +3134,6 @@
                             const romStr = isMajor
                                 ? `${this.toRoman(majorCount)}.`
                                 : `${subCount}.`;
-                            // Strip existing leading Roman/Arabic numeral to avoid duplication
                             displayTitle = displayTitle.replace(/^(?:[IVX]+|\d+)\.\s*/i, '');
                             prefixHTML = `<span class="toc-entry-prefix">${romStr}</span>`;
                         } else if (listType === 'section') {
@@ -3075,6 +3237,16 @@
                 const countStart = parseInt(document.getElementById('page-count-start').value) || 1;
                 const padFolios = document.getElementById('toc-pad-folios') ? document.getElementById('toc-pad-folios').checked : true;
 
+                // Running Header Configuration
+                const rhEnabled = document.getElementById('rh-enable').checked;
+                const rhEvenSource = document.getElementById('rh-even-source').value;
+                const rhOddSource = document.getElementById('rh-odd-source').value;
+                const rhCustomText = document.getElementById('rh-custom-text').value.trim();
+                const rhAlign = document.getElementById('rh-align').value;
+                const rhStyle = document.getElementById('rh-style').value;
+                const rhStartPage = parseInt(document.getElementById('rh-start-page').value) || 1;
+                const rhHideOpening = document.getElementById('rh-hide-opening').checked;
+
                 const getDisplayPageNum = (physicalPageIdx) => {
                     return Math.max(1, countStart + (physicalPageIdx - showStart));
                 };
@@ -3137,7 +3309,6 @@
                     let firstBodyParaAssigned = false;
                     
                     for (let i = 0; i < blocks.length; i++) {
-                        // Skip redundant inline TOC in body if Procedural TOC is replacing it
                         if (isBody && this.tocEnabled && this.inlineTocIndices && this.inlineTocIndices.has(i)) {
                             continue;
                         }
@@ -3236,7 +3407,7 @@
                     flowBlocks(this.bodyTextBlocks, actualBodyStart, true);
                 }
 
-                // Pass 2: Inject resolved page numbers into rendered TOC entries
+                // Pass 2A: Inject resolved page numbers into rendered TOC entries
                 if (this.tocTextBlocks.length > 0) {
                     const renderedEntries = this.docContainer.querySelectorAll('li.toc-entry');
                     renderedEntries.forEach(li => {
@@ -3254,6 +3425,93 @@
 
                         const folioNum = getDisplayPageNum(resolvedPhysicalPage);
                         numSpan.textContent = padFolios ? String(folioNum).padStart(2, '0') : String(folioNum);
+                    });
+                }
+
+                // Pass 2B: Stateful Chapter Tracking & Running Header Injection
+                if (rhEnabled) {
+                    // Seed default Document H1 from the first H1 in the body manuscript
+                    let defaultDocH1 = '';
+                    for (const b of this.bodyTextBlocks) {
+                        if (b.tagName === 'H1') {
+                            defaultDocH1 = b.innerText.trim();
+                            break;
+                        }
+                    }
+
+                    let activeH1 = defaultDocH1;
+                    let activeH2 = '';
+                    let activeH3 = '';
+
+                    const resolveSourceText = (sourceType, pageH1, pageH2, pageH3) => {
+                        if (sourceType === 'none') return '';
+                        if (sourceType === 'custom') return rhCustomText;
+                        if (sourceType === 'h1') return pageH1 || pageH2 || '';
+                        if (sourceType === 'h2') return pageH2 || pageH1 || '';
+                        if (sourceType === 'h2-h3') {
+                            const main = pageH2 || pageH1 || '';
+                            if (main && pageH3) return `${main} — ${pageH3}`;
+                            return main;
+                        }
+                        return '';
+                    };
+
+                    const renderedPages = Array.from(this.docContainer.children);
+                    renderedPages.forEach((pageEl, idx) => {
+                        const pageNumber = idx + 1;
+                        const contentEl = pageEl.querySelector('.page-content');
+                        if (!contentEl) return;
+
+                        const firstChild = contentEl.firstElementChild;
+                        const isOpeningPage = firstChild && firstChild.tagName === 'H1';
+                        const hasTocList = contentEl.querySelector('.toc-list') !== null;
+                        const tocTitleEl = contentEl.querySelector('h1.toc-header-title');
+
+                        // Scan headings on this page to update active H1/H2/H3 state
+                        let pageFirstH2 = '';
+                        let pageFirstH3 = '';
+
+                        Array.from(contentEl.children).forEach(node => {
+                            if (node.tagName === 'H1' && !node.classList.contains('toc-header-title')) {
+                                activeH1 = node.innerText.trim();
+                                activeH2 = '';
+                                activeH3 = '';
+                            } else if (node.tagName === 'H2') {
+                                const text = node.innerText.trim();
+                                if (!pageFirstH2) pageFirstH2 = text;
+                                activeH2 = text;
+                                activeH3 = '';
+                            } else if (node.tagName === 'H3') {
+                                const text = node.innerText.trim();
+                                if (!pageFirstH3) pageFirstH3 = text;
+                                activeH3 = text;
+                            }
+                        });
+
+                        // Effective headings for the current page
+                        const effectiveH1 = activeH1;
+                        let effectiveH2 = pageFirstH2 || activeH2;
+                        const effectiveH3 = pageFirstH3 || activeH3;
+
+                        if (tocTitleEl || hasTocList) {
+                            const tocLabel = document.getElementById('toc-title-text').value.trim() || 'Inhaltsverzeichnis';
+                            effectiveH2 = tocLabel;
+                        }
+
+                        if (pageNumber < rhStartPage) return;
+                        if (rhHideOpening && isOpeningPage) return;
+                        if (contentEl.children.length === 0) return;
+
+                        const isOddPage = pageNumber % 2 !== 0;
+                        const chosenSource = isOddPage ? rhOddSource : rhEvenSource;
+                        const headerText = resolveSourceText(chosenSource, effectiveH1, effectiveH2, effectiveH3);
+
+                        if (headerText) {
+                            const rhNode = document.createElement('div');
+                            rhNode.className = `running-header rh-align-${rhAlign} rh-style-${rhStyle}`;
+                            rhNode.innerText = headerText;
+                            pageEl.appendChild(rhNode);
+                        }
                     });
                 }
             }
