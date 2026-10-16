@@ -51,8 +51,10 @@
             --guide-fill-color: rgba(255, 0, 255, 0.1);
             --baseline-color: rgba(0, 255, 255, 0.4);
 
-            /* Typography Settings */
+            /* Typography & TOC Variables */
             --bullet-char: "• ";
+            --toc-indent-step: 5mm;
+            --toc-major-gap: 0px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -69,8 +71,8 @@
 
         /* --- LEFT SIDEBAR ARCHITECTURE --- */
         #ui-panel {
-            width: 356px;
-            min-width: 356px;
+            width: 360px;
+            min-width: 360px;
             background-color: var(--ui-panel);
             display: flex;
             flex-direction: column;
@@ -223,6 +225,15 @@
             letter-spacing: 0.6px;
         }
 
+        .sub-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #444;
+            margin-top: 2px;
+        }
+
         .control-row { display: flex; gap: 10px; align-items: flex-end; }
         .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .control-group { display: flex; flex-direction: column; gap: 4px; flex: 1; }
@@ -231,6 +242,36 @@
             flex-direction: row;
             align-items: center;
             gap: 8px;
+        }
+
+        /* Level Pill Toggles for TOC */
+        .pill-group {
+            display: flex;
+            gap: 6px;
+        }
+        .level-pill {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            background: #f5f5f5;
+            border: 1px solid #dcdcdc;
+            border-radius: 3px;
+            padding: 6px 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--ui-text-muted);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s ease;
+        }
+        .level-pill input { display: none; }
+        .level-pill:has(input:checked) {
+            background: #e3e6ff;
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
         }
 
         label {
@@ -420,7 +461,7 @@
             font-size: 12px;
             cursor: pointer;
             border-radius: 3px;
-            transition: opacity 0.15s, transform 0.1s;
+            transition: opacity 0.15s, transform 0.1s, background-color 0.15s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -704,6 +745,161 @@
         }
         .page ul li::marker { content: var(--bullet-char); color: var(--primary-blue); }
 
+        /* --- PROFESSIONAL EDITORIAL TABLE OF CONTENTS STYLES --- */
+        .page h1.toc-header-title {
+            font-size: 20pt;
+            line-height: calc(var(--baseline-increment) * 2);
+            margin-top: 0;
+            margin-bottom: var(--baseline-increment);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            column-span: all;
+        }
+
+        .page ul.toc-list {
+            padding-left: 0 !important;
+            margin-bottom: var(--baseline-increment);
+            list-style: none !important;
+        }
+
+        .page ul.toc-list li.toc-entry {
+            display: flex;
+            align-items: baseline;
+            font-size: var(--base-font-size);
+            line-height: var(--baseline-increment);
+            margin-bottom: 0;
+            padding-left: calc(var(--toc-level-offset, 0) * var(--toc-indent-step));
+            text-align: left;
+            text-align-last: left;
+            hyphens: none;
+            break-inside: avoid;
+        }
+        .page ul.toc-list li.toc-entry::marker {
+            content: none !important;
+        }
+
+        /* Baseline-quantized spacing before major TOC chapters */
+        .page ul.toc-list li.toc-entry.toc-major-spaced {
+            margin-top: var(--toc-major-gap, 0px);
+        }
+        .page ul.toc-list li.toc-entry:first-child {
+            margin-top: 0 !important;
+        }
+
+        /* Major Entry Visual Styles (Zero height distortion via inset box-shadow) */
+        .page ul.toc-list li.toc-entry.toc-style-bold-rule {
+            font-weight: 700;
+            box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.22);
+        }
+        .page ul.toc-list li.toc-entry.toc-style-semibold {
+            font-weight: 600;
+        }
+        .page ul.toc-list li.toc-entry.toc-style-uppercase {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-size: calc(var(--base-font-size) * 0.9);
+        }
+        .page ul.toc-list li.toc-entry.toc-style-regular {
+            font-weight: 400;
+        }
+
+        /* Sub-level entries */
+        .page ul.toc-list li.toc-entry.toc-sub-entry {
+            font-weight: 400;
+            color: #2a2a2a;
+        }
+
+        .toc-entry-prefix {
+            font-variant-numeric: tabular-nums;
+            margin-right: 6pt;
+            flex-shrink: 0;
+            color: var(--primary-blue);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: baseline;
+        }
+        .toc-entry-prefix img {
+            width: 8pt;
+            height: 8pt;
+            object-fit: contain;
+            transform: translateY(1px);
+        }
+
+        .toc-entry-title {
+            flex: 0 1 auto;
+            min-width: 0;
+            overflow-wrap: break-word;
+        }
+
+        /* Tab Leader Variations */
+        .toc-entry-leader {
+            flex: 1 1 12pt;
+            margin: 0 6pt;
+            height: 0;
+            align-self: baseline;
+            transform: translateY(-1px);
+        }
+        .toc-leader-dots {
+            border-bottom: 1.5px dotted rgba(0, 0, 0, 0.4);
+        }
+        .toc-leader-fine-dots {
+            border-bottom: 1px dotted rgba(0, 0, 0, 0.28);
+        }
+        .toc-leader-rule {
+            border-bottom: 0.75px solid rgba(0, 0, 0, 0.22);
+            transform: translateY(-2.5px);
+        }
+        .toc-leader-dashed {
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+        .toc-leader-none {
+            border-bottom: none;
+        }
+
+        .toc-page-num {
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+            text-align: right;
+            min-width: 14pt;
+        }
+
+        /* Alternative Folio Alignments */
+        .page ul.toc-list li.toc-entry.toc-folio-adjacent .toc-entry-leader {
+            display: none;
+        }
+        .page ul.toc-list li.toc-entry.toc-folio-adjacent .toc-page-num {
+            margin-left: 6pt;
+            color: var(--ui-text-muted);
+            font-weight: 500;
+        }
+        .page ul.toc-list li.toc-entry.toc-folio-adjacent .toc-page-num::before {
+            content: "— ";
+            opacity: 0.6;
+        }
+
+        .page ul.toc-list li.toc-entry.toc-folio-left {
+            flex-direction: row;
+        }
+        .page ul.toc-list li.toc-entry.toc-folio-left .toc-entry-leader {
+            display: none;
+        }
+        .page ul.toc-list li.toc-entry.toc-folio-left .toc-page-num {
+            order: -1;
+            text-align: left;
+            min-width: 22pt;
+            margin-right: 6pt;
+            color: var(--primary-blue);
+        }
+
+        .page ul.toc-list li.toc-entry.toc-folio-hidden .toc-entry-leader,
+        .page ul.toc-list li.toc-entry.toc-folio-hidden .toc-page-num {
+            display: none;
+        }
+
+        /* Structure Grid Overlay */
         .grid-overlay {
             position: absolute;
             top: var(--m-top); left: var(--m-inside); right: var(--m-outside); bottom: var(--m-bottom);
@@ -966,10 +1162,10 @@
 
         <div id="sidebar-scroll">
             <!-- 01. Manuscript & Content Flow -->
-            <details class="accordion">
+            <details class="accordion" open>
                 <summary>
                     <span class="summary-left"><span class="step-num">01</span> Manuscript &amp; TOC</span>
-                    <span class="summary-right"><span class="summary-meta">Content</span><span class="arrow"></span></span>
+                    <span class="summary-right"><span class="summary-meta" id="meta-toc-status">TOC Off</span><span class="arrow"></span></span>
                 </summary>
                 <div class="accordion-content">
                     <!-- Body Text Source Card -->
@@ -992,54 +1188,143 @@
                         </div>
                     </div>
 
-                    <!-- Table of Contents Card -->
+                    <!-- Table of Contents Designer Card -->
                     <div class="gestalt-card">
                         <div class="card-header">
-                            <h3 class="subsection-title">Automated Table of Contents</h3>
+                            <h3 class="subsection-title">Table of Contents Designer</h3>
                         </div>
-                        <button id="btn-toggle-toc" class="primary-btn" style="padding: 9px; font-size: 11px;">Generate TOC</button>
+                        <button id="btn-toggle-toc" class="primary-btn" style="padding: 9px; font-size: 11px;">Enable Table of Contents</button>
                         
                         <div id="toc-settings" style="display: none; flex-direction: column; gap: 10px; margin-top: 4px;">
-                            <div class="control-group">
-                                <label>TOC Layout Style</label>
-                                <select id="toc-layout-style">
-                                    <option value="single">1-Page (Title &amp; List Combined)</option>
-                                    <option value="spread" selected>2-Page Spread (Title Left / List Right)</option>
-                                </select>
-                            </div>
+                            <!-- Title & Layout -->
+                            <div class="sub-label">Header &amp; Page Placement</div>
                             <div class="control-grid">
+                                <div class="control-group" style="grid-column: 1 / -1;">
+                                    <label for="toc-title-text">TOC Heading Title (Leave blank to hide)</label>
+                                    <input type="text" id="toc-title-text" value="Inhaltsverzeichnis" placeholder="e.g. Inhaltsverzeichnis">
+                                </div>
                                 <div class="control-group">
-                                    <label>List Type</label>
-                                    <select id="toc-list-type">
-                                        <option value="bullet">Bullet List</option>
-                                        <option value="numbered">Numbered List</option>
+                                    <label for="toc-layout-style">Spread Layout</label>
+                                    <select id="toc-layout-style">
+                                        <option value="single" selected>1-Page Editorial</option>
+                                        <option value="spread">2-Page Spread (Title / List)</option>
                                     </select>
                                 </div>
                                 <div class="control-group">
-                                    <label>Start on Page</label>
-                                    <input type="number" id="toc-start-page" value="3" min="1">
+                                    <label for="toc-start-page">Start on Page</label>
+                                    <input type="number" id="toc-start-page" value="2" min="1">
                                 </div>
                             </div>
-                            <div class="control-group" id="toc-bullet-type-group">
-                                <label>TOC Bullet Marker</label>
+
+                            <hr class="separator">
+
+                            <!-- Levels & Source Parsing -->
+                            <div class="sub-label">Hierarchy &amp; Source Levels</div>
+                            <div class="pill-group">
+                                <label class="level-pill"><input type="checkbox" id="toc-inc-h1"> H1</label>
+                                <label class="level-pill"><input type="checkbox" id="toc-inc-h2" checked> H2</label>
+                                <label class="level-pill"><input type="checkbox" id="toc-inc-h3" checked> H3</label>
+                            </div>
+                            <div class="control-group checkbox-row">
+                                <input type="checkbox" id="toc-parse-inline" checked>
+                                <label for="toc-parse-inline">Convert &amp; Replace Inline Manuscript TOC</label>
+                            </div>
+
+                            <hr class="separator">
+
+                            <!-- Tab Leaders & Folios -->
+                            <div class="sub-label">Leaders &amp; Page Numbers</div>
+                            <div class="control-grid">
+                                <div class="control-group">
+                                    <label for="toc-leader-style">Leader Style</label>
+                                    <select id="toc-leader-style">
+                                        <option value="dots" selected>Spaced Dots ( · · · )</option>
+                                        <option value="fine-dots">Fine Dots ( ...... )</option>
+                                        <option value="rule">Solid Hairline ( ─── )</option>
+                                        <option value="dashed">Dashed Rule ( - - - )</option>
+                                        <option value="none">None (Open Space)</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label for="toc-folio-align">Folio Position</label>
+                                    <select id="toc-folio-align">
+                                        <option value="flush-right" selected>Flush Right</option>
+                                        <option value="adjacent">After Title (— 04)</option>
+                                        <option value="left">Left Column</option>
+                                        <option value="hidden">Hidden</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="control-group checkbox-row">
+                                <input type="checkbox" id="toc-pad-folios" checked>
+                                <label for="toc-pad-folios">Zero-Pad Page Numbers (01, 02…)</label>
+                            </div>
+
+                            <hr class="separator">
+
+                            <!-- Entry Styling, Prefixes & Rhythm -->
+                            <div class="sub-label">Entry Styling &amp; Baseline Rhythm</div>
+                            <div class="control-grid">
+                                <div class="control-group">
+                                    <label for="toc-list-type">Entry Prefix</label>
+                                    <select id="toc-list-type">
+                                        <option value="none" selected>Clean (Keep Text)</option>
+                                        <option value="numbered">Index (01, 02…)</option>
+                                        <option value="roman">Roman (I, II, III…)</option>
+                                        <option value="section">Section (1.1, 1.2…)</option>
+                                        <option value="bullet">Marker / Bullet</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label for="toc-major-style">Major Chapter Style</label>
+                                    <select id="toc-major-style">
+                                        <option value="bold-rule" selected>Bold + Top Hairline</option>
+                                        <option value="semibold">Semi-Bold</option>
+                                        <option value="uppercase">Uppercase Tracked</option>
+                                        <option value="regular">Regular</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="control-group" id="toc-bullet-type-group" style="display: none;">
+                                <label for="toc-bullet-type">Marker Symbol</label>
                                 <select id="toc-bullet-type">
                                     <option value="•">Solid Circle ( • )</option>
+                                    <option value="—">Em-Dash ( — )</option>
                                     <option value="*">Asterisk ( * )</option>
                                     <option value="-">Hyphen ( - )</option>
-                                    <option value="custom">Custom Symbol (Upload Image)</option>
+                                    <option value="custom">Custom SVG/PNG Upload</option>
                                 </select>
                             </div>
                             <div class="drop-zone" id="toc-custom-bullet-drop" style="display: none;">
                                 <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                                Drop SVG/PNG Bullet Here
+                                Drop SVG/PNG Marker Here
                             </div>
+
+                            <div class="control-grid">
+                                <div class="control-group">
+                                    <label for="toc-indent-mm">Sub-Level Indent</label>
+                                    <div class="input-suffix">
+                                        <input type="number" id="toc-indent-mm" value="5" min="0" max="25" step="0.5"><span>mm</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="toc-major-spacing">Chapter Gap</label>
+                                    <select id="toc-major-spacing">
+                                        <option value="0">0× (Compact)</option>
+                                        <option value="1" selected>1× Baseline Line</option>
+                                        <option value="2">2× Baseline Lines</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="help-text" id="toc-summary-info">11 chapters · 24 sub-entries locked to baseline</div>
                         </div>
                     </div>
                 </div>
             </details>
 
             <!-- 02. Page Geometry & Margins -->
-            <details class="accordion" open>
+            <details class="accordion">
                 <summary>
                     <span class="summary-left"><span class="step-num">02</span> Page &amp; Margins</span>
                     <span class="summary-right"><span class="summary-meta" id="meta-page-format">A5 · Spreads</span><span class="arrow"></span></span>
@@ -1097,7 +1382,7 @@
             </details>
 
             <!-- 03. Grid & Baseline Architecture -->
-            <details class="accordion" open>
+            <details class="accordion">
                 <summary>
                     <span class="summary-left"><span class="step-num">03</span> Grid &amp; Baseline</span>
                     <span class="summary-right"><span class="summary-meta" id="meta-grid-info">14pt · 2×4</span><span class="arrow"></span></span>
@@ -1474,9 +1759,11 @@
                 this.pfStartX = 0;
                 this.pfStartY = 0;
 
-                // Document Data
+                // Document & TOC State
+                this.tocEnabled = false;
                 this.tocTextBlocks = [];
                 this.bodyTextBlocks = [];
+                this.inlineTocIndices = new Set();
                 
                 // Pre-formatted HTML Seed
                 this.rawBodyHTML = `
@@ -2351,31 +2638,46 @@
                 });
                 applyJustification();
 
-                // TOC Generator UI Hooks
-                document.getElementById('btn-toggle-toc').addEventListener('click', (e) => {
-                    const settings = document.getElementById('toc-settings');
-                    if (settings.style.display === 'none') {
-                        settings.style.display = 'flex';
-                        e.target.innerText = "Update TOC";
-                        e.target.style.backgroundColor = "#1a1a1a";
-                        this.generateTOC();
-                    } else {
-                        this.generateTOC();
-                    }
-                });
+                // --- TABLE OF CONTENTS DESIGNER UI HOOKS ---
+                const tocToggleBtn = document.getElementById('btn-toggle-toc');
+                const tocSettings = document.getElementById('toc-settings');
+                const tocMetaBadge = document.getElementById('meta-toc-status');
 
-                document.getElementById('toc-layout-style').addEventListener('change', () => {
+                tocToggleBtn.addEventListener('click', () => {
+                    this.tocEnabled = !this.tocEnabled;
+                    tocSettings.style.display = this.tocEnabled ? 'flex' : 'none';
+                    tocToggleBtn.innerText = this.tocEnabled ? "Disable Table of Contents" : "Enable Table of Contents";
+                    tocToggleBtn.style.backgroundColor = this.tocEnabled ? "#1f1f1f" : "var(--primary-blue)";
+                    if (tocMetaBadge) tocMetaBadge.textContent = this.tocEnabled ? "TOC Active" : "TOC Off";
                     this.generateTOC();
                 });
 
                 document.getElementById('toc-list-type').addEventListener('change', (e) => {
-                    document.getElementById('toc-bullet-type-group').style.display = e.target.value === 'bullet' ? 'flex' : 'none';
+                    const isBullet = e.target.value === 'bullet';
+                    document.getElementById('toc-bullet-type-group').style.display = isBullet ? 'flex' : 'none';
+                    const isCustomBullet = isBullet && document.getElementById('toc-bullet-type').value === 'custom';
+                    document.getElementById('toc-custom-bullet-drop').style.display = isCustomBullet ? 'flex' : 'none';
                     this.generateTOC();
                 });
 
                 document.getElementById('toc-bullet-type').addEventListener('change', (e) => {
                     document.getElementById('toc-custom-bullet-drop').style.display = e.target.value === 'custom' ? 'flex' : 'none';
                     this.generateTOC();
+                });
+
+                const tocControls = [
+                    'toc-title-text', 'toc-layout-style', 'toc-start-page',
+                    'toc-inc-h1', 'toc-inc-h2', 'toc-inc-h3', 'toc-parse-inline',
+                    'toc-leader-style', 'toc-folio-align', 'toc-pad-folios',
+                    'toc-major-style', 'toc-indent-mm', 'toc-major-spacing'
+                ];
+
+                tocControls.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.addEventListener('input', () => this.generateTOC());
+                        el.addEventListener('change', () => this.generateTOC());
+                    }
                 });
 
                 const tocCustomDrop = document.getElementById('toc-custom-bullet-drop');
@@ -2392,7 +2694,7 @@
                     }
                 });
 
-                ['page-numbers', 'page-show-start', 'page-show-end', 'page-count-start', 'toc-start-page', 'body-start-page'].forEach(id => {
+                ['page-numbers', 'page-show-start', 'page-show-end', 'page-count-start', 'body-start-page'].forEach(id => {
                     const el = document.getElementById(id);
                     if(el) el.addEventListener('input', () => this.queueReflow());
                 });
@@ -2485,55 +2787,225 @@
                 return text.trim();
             }
 
+            toRoman(num) {
+                const map = [
+                    [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+                    [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']
+                ];
+                let result = '';
+                let n = Math.max(1, num);
+                for (const [val, char] of map) {
+                    while (n >= val) {
+                        result += char;
+                        n -= val;
+                    }
+                }
+                return result;
+            }
+
+            normalizeHeadingKey(str) {
+                return (str || '').trim().toLowerCase().replace(/\s+/g, ' ');
+            }
+
             generateTOC() {
-                const settings = document.getElementById('toc-settings');
-                if (settings.style.display === 'none') {
+                this.inlineTocIndices = new Set();
+
+                if (!this.tocEnabled) {
                     this.tocTextBlocks = [];
                     this.queueReflow();
                     return; 
                 }
 
-                this.tocTextBlocks = [];
+                // Read TOC Customization Controls
+                const titleText = document.getElementById('toc-title-text').value.trim();
                 const layoutStyle = document.getElementById('toc-layout-style').value;
+                const incH1 = document.getElementById('toc-inc-h1').checked;
+                const incH2 = document.getElementById('toc-inc-h2').checked;
+                const incH3 = document.getElementById('toc-inc-h3').checked;
+                const parseInline = document.getElementById('toc-parse-inline').checked;
+                const leaderStyle = document.getElementById('toc-leader-style').value;
+                const folioAlign = document.getElementById('toc-folio-align').value;
                 const listType = document.getElementById('toc-list-type').value;
                 const bulletType = document.getElementById('toc-bullet-type').value;
-                
-                const title = document.createElement('h1');
-                title.innerText = "Inhaltsverzeichnis";
-                this.tocTextBlocks.push(title);
+                const majorStyle = document.getElementById('toc-major-style').value;
+                const indentMm = Math.max(0, parseFloat(document.getElementById('toc-indent-mm').value) || 0);
+                const majorGapLines = parseInt(document.getElementById('toc-major-spacing').value) || 0;
 
-                if (layoutStyle === 'spread') {
+                // Apply CSS Custom Properties for Baseline-Safe Spacing & Indentation
+                document.documentElement.style.setProperty('--toc-indent-step', `${indentMm}mm`);
+                document.documentElement.style.setProperty('--toc-major-gap', `calc(var(--baseline-increment) * ${majorGapLines})`);
+
+                // Collect TOC Entries from Body Blocks
+                const entries = [];
+                const seenKeys = new Set();
+
+                // 1. Detect if the manuscript contains an inline "Inhaltsverzeichnis" / "Table of Contents" + <ul>
+                let inlineTocHeaderIdx = -1;
+                let inlineTocListIdx = -1;
+
+                for (let i = 0; i < this.bodyTextBlocks.length; i++) {
+                    const b = this.bodyTextBlocks[i];
+                    if (['H1', 'H2', 'H3'].includes(b.tagName)) {
+                        const norm = this.normalizeHeadingKey(b.innerText);
+                        if (norm === 'inhaltsverzeichnis' || norm === 'table of contents' || norm === 'inhalt') {
+                            inlineTocHeaderIdx = i;
+                            if (this.bodyTextBlocks[i + 1] && (this.bodyTextBlocks[i + 1].tagName === 'UL' || this.bodyTextBlocks[i + 1].tagName === 'OL')) {
+                                inlineTocListIdx = i + 1;
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (parseInline && inlineTocHeaderIdx !== -1) {
+                    this.inlineTocIndices.add(inlineTocHeaderIdx);
+                    if (inlineTocListIdx !== -1) {
+                        this.inlineTocIndices.add(inlineTocListIdx);
+                        const inlineItems = Array.from(this.bodyTextBlocks[inlineTocListIdx].children);
+                        inlineItems.forEach((li, idx) => {
+                            const text = li.innerText.trim();
+                            if (!text) return;
+                            // Classify Roman numerals (I., II., III...) or "Einleitung" as Level 2 (Major Chapter), and sub-items as Level 3
+                            const isRomanMajor = /^(?:[IVX]+\.|Einleitung\b)/i.test(text);
+                            const level = isRomanMajor ? 2 : 3;
+                            if ((level === 2 && !incH2) || (level === 3 && !incH3)) return;
+
+                            const key = this.normalizeHeadingKey(text);
+                            seenKeys.add(key);
+                            entries.push({
+                                title: text,
+                                level: level,
+                                key: key,
+                                syntheticOffset: Math.floor(idx / 4) // Fallback page progression if not yet in body
+                            });
+                        });
+                    }
+                }
+
+                // 2. Collect actual H1, H2, H3 headings from the manuscript
+                this.bodyTextBlocks.forEach((block, idx) => {
+                    if (this.inlineTocIndices.has(idx)) return;
+                    if (!['H1', 'H2', 'H3'].includes(block.tagName)) return;
+
+                    const text = block.innerText.trim();
+                    if (!text) return;
+                    const norm = this.normalizeHeadingKey(text);
+                    if (norm === 'inhaltsverzeichnis' || norm === 'table of contents') return;
+
+                    const level = parseInt(block.tagName.substring(1), 10);
+                    if (level === 1 && !incH1) return;
+                    if (level === 2 && !incH2) return;
+                    if (level === 3 && !incH3) return;
+
+                    // If already captured via the inline TOC list, keep it linked by key
+                    if (seenKeys.has(norm)) return;
+
+                    seenKeys.add(norm);
+                    entries.push({
+                        title: text,
+                        level: level,
+                        key: norm,
+                        blockIndex: idx
+                    });
+                });
+
+                // Determine minimum heading level present so top-level entries start at 0 indent
+                const minLevel = entries.length > 0 ? Math.min(...entries.map(e => e.level)) : 2;
+
+                this.tocTextBlocks = [];
+
+                // Optional TOC Header
+                if (titleText) {
+                    const headerEl = document.createElement('h1');
+                    headerEl.className = 'toc-header-title';
+                    headerEl.innerText = titleText;
+                    this.tocTextBlocks.push(headerEl);
+                }
+
+                if (layoutStyle === 'spread' && titleText) {
                     const hr = document.createElement('hr');
                     this.tocTextBlocks.push(hr);
                 }
 
-                const list = document.createElement(listType === 'numbered' ? 'ol' : 'ul');
-                if (listType === 'numbered') {
-                    list.style.listStyleType = 'decimal';
-                    list.style.paddingLeft = '20pt';
-                } else {
-                    if (bulletType === 'custom' && document.getElementById('toc-custom-bullet-drop').dataset.loadedUrl) {
-                        list.style.listStyleImage = `url(${document.getElementById('toc-custom-bullet-drop').dataset.loadedUrl})`;
-                        list.style.paddingLeft = '20pt';
-                    } else {
-                        list.style.setProperty('--bullet-char', `"${bulletType} "`);
-                        list.style.paddingLeft = '14pt';
-                    }
-                }
+                // Build the Editorial TOC List
+                const listEl = document.createElement('ul');
+                listEl.className = 'toc-list';
 
-                this.bodyTextBlocks.forEach(block => {
-                    if (['H1', 'H2', 'H3'].includes(block.tagName)) {
-                        const li = document.createElement('li');
-                        li.innerText = block.innerText;
-                        
-                        if (block.tagName === 'H2') li.style.marginLeft = '12pt';
-                        if (block.tagName === 'H3') li.style.marginLeft = '24pt';
-                        
-                        list.appendChild(li);
+                let majorCount = 0;
+                let subCount = 0;
+                let totalMajor = 0;
+                let totalSub = 0;
+
+                entries.forEach((entry, index) => {
+                    const isMajor = entry.level <= minLevel;
+                    if (isMajor) {
+                        majorCount++;
+                        totalMajor++;
+                        subCount = 0;
+                    } else {
+                        subCount++;
+                        totalSub++;
                     }
+
+                    const li = document.createElement('li');
+                    const offsetLevel = Math.max(0, entry.level - minLevel);
+                    li.className = `toc-entry ${isMajor ? `toc-major-entry toc-style-${majorStyle}` : 'toc-sub-entry'} toc-folio-${folioAlign}`;
+                    if (isMajor && index > 0 && majorGapLines > 0) {
+                        li.classList.add('toc-major-spaced');
+                    }
+                    li.style.setProperty('--toc-level-offset', offsetLevel);
+                    li.dataset.headingKey = entry.key;
+                    li.dataset.syntheticOffset = entry.syntheticOffset !== undefined ? entry.syntheticOffset : Math.floor(index / 4);
+
+                    // Optional Prefix / Numbering / Marker
+                    let prefixHTML = '';
+                    let displayTitle = entry.title;
+
+                    if (listType !== 'none') {
+                        if (listType === 'numbered') {
+                            const numStr = isMajor
+                                ? String(majorCount).padStart(2, '0')
+                                : `${String(majorCount).padStart(2, '0')}.${subCount}`;
+                            prefixHTML = `<span class="toc-entry-prefix">${numStr}</span>`;
+                        } else if (listType === 'roman') {
+                            const romStr = isMajor
+                                ? `${this.toRoman(majorCount)}.`
+                                : `${subCount}.`;
+                            // Strip existing leading Roman/Arabic numeral to avoid duplication
+                            displayTitle = displayTitle.replace(/^(?:[IVX]+|\d+)\.\s*/i, '');
+                            prefixHTML = `<span class="toc-entry-prefix">${romStr}</span>`;
+                        } else if (listType === 'section') {
+                            const secStr = isMajor ? `${majorCount}.0` : `${majorCount}.${subCount}`;
+                            displayTitle = displayTitle.replace(/^(?:[IVX]+|\d+)\.\s*/i, '');
+                            prefixHTML = `<span class="toc-entry-prefix">${secStr}</span>`;
+                        } else if (listType === 'bullet') {
+                            const customUrl = document.getElementById('toc-custom-bullet-drop').dataset.loadedUrl;
+                            if (bulletType === 'custom' && customUrl) {
+                                prefixHTML = `<span class="toc-entry-prefix"><img src="${customUrl}" alt="•"></span>`;
+                            } else {
+                                const sym = bulletType === 'custom' ? '•' : bulletType;
+                                prefixHTML = `<span class="toc-entry-prefix">${sym}</span>`;
+                            }
+                        }
+                    }
+
+                    li.innerHTML = `
+                        ${prefixHTML}
+                        <span class="toc-entry-title">${displayTitle}</span>
+                        <span class="toc-entry-leader toc-leader-${leaderStyle}"></span>
+                        <span class="toc-page-num">01</span>
+                    `;
+
+                    listEl.appendChild(li);
                 });
 
-                this.tocTextBlocks.push(list);
+                this.tocTextBlocks.push(listEl);
+
+                const summaryEl = document.getElementById('toc-summary-info');
+                if (summaryEl) {
+                    summaryEl.textContent = `${totalMajor} major chapters · ${totalSub} sub-entries locked to baseline`;
+                }
+
                 this.queueReflow();
             }
 
@@ -2601,6 +3073,11 @@
                 const showStart = parseInt(document.getElementById('page-show-start').value) || 1;
                 const showEnd = parseInt(document.getElementById('page-show-end').value) || 999;
                 const countStart = parseInt(document.getElementById('page-count-start').value) || 1;
+                const padFolios = document.getElementById('toc-pad-folios') ? document.getElementById('toc-pad-folios').checked : true;
+
+                const getDisplayPageNum = (physicalPageIdx) => {
+                    return Math.max(1, countStart + (physicalPageIdx - showStart));
+                };
 
                 const getOrCreatePage = (idx) => {
                     while(this.docContainer.children.length < idx) {
@@ -2627,7 +3104,7 @@
                         if (numCheckbox && currentIdx >= showStart && currentIdx <= showEnd) {
                             const pageNumNode = document.createElement('div');
                             pageNumNode.className = 'page-number';
-                            const displayNumber = countStart + (currentIdx - showStart);
+                            const displayNumber = getDisplayPageNum(currentIdx);
                             pageNumNode.innerText = displayNumber;
                             page.appendChild(pageNumNode);
                         }
@@ -2651,11 +3128,20 @@
                     return false;
                 };
 
+                // Map to record physical page index where each heading lands in Pass 1
+                const headingPageMap = new Map();
+
                 const flowBlocks = (blocks, startIdx, isBody) => {
                     let pageIndex = startIdx;
                     let currentContentNode = getOrCreatePage(pageIndex);
+                    let firstBodyParaAssigned = false;
                     
                     for (let i = 0; i < blocks.length; i++) {
+                        // Skip redundant inline TOC in body if Procedural TOC is replacing it
+                        if (isBody && this.tocEnabled && this.inlineTocIndices && this.inlineTocIndices.has(i)) {
+                            continue;
+                        }
+
                         const block = blocks[i];
                         
                         if (block.tagName === 'HR') {
@@ -2710,8 +3196,9 @@
 
                         const clone = block.cloneNode(true);
                         
-                        if (isBody && dropcapLines > 0 && i === 0 && clone.tagName === 'P') {
+                        if (isBody && dropcapLines > 0 && !firstBodyParaAssigned && clone.tagName === 'P') {
                             clone.classList.add('dropcap');
+                            firstBodyParaAssigned = true;
                         }
                         
                         currentContentNode.appendChild(clone);
@@ -2721,6 +3208,14 @@
                             pageIndex++;
                             currentContentNode = getOrCreatePage(pageIndex);
                             currentContentNode.appendChild(clone);
+                        }
+
+                        // Record exact page index for headings
+                        if (isBody && ['H1', 'H2', 'H3'].includes(clone.tagName)) {
+                            const key = this.normalizeHeadingKey(clone.innerText);
+                            if (key && !headingPageMap.has(key)) {
+                                headingPageMap.set(key, pageIndex);
+                            }
                         }
                     }
                     return pageIndex;
@@ -2733,13 +3228,33 @@
                     lastUsedPage = flowBlocks(this.tocTextBlocks, tocStart, false);
                 }
 
+                let actualBodyStart = parseInt(document.getElementById('body-start-page').value) || 1;
                 if (this.bodyTextBlocks.length > 0) {
-                    let bodyStart = parseInt(document.getElementById('body-start-page').value) || 1;
-                    let actualBodyStart = Math.max(lastUsedPage + 1, bodyStart); 
-                    
-                    if (this.tocTextBlocks.length === 0) actualBodyStart = bodyStart;
-
+                    if (this.tocTextBlocks.length > 0) {
+                        actualBodyStart = Math.max(lastUsedPage + 1, actualBodyStart);
+                    }
                     flowBlocks(this.bodyTextBlocks, actualBodyStart, true);
+                }
+
+                // Pass 2: Inject resolved page numbers into rendered TOC entries
+                if (this.tocTextBlocks.length > 0) {
+                    const renderedEntries = this.docContainer.querySelectorAll('li.toc-entry');
+                    renderedEntries.forEach(li => {
+                        const key = li.dataset.headingKey;
+                        const numSpan = li.querySelector('.toc-page-num');
+                        if (!numSpan) return;
+
+                        let resolvedPhysicalPage;
+                        if (headingPageMap.has(key)) {
+                            resolvedPhysicalPage = headingPageMap.get(key);
+                        } else {
+                            const offset = parseInt(li.dataset.syntheticOffset) || 0;
+                            resolvedPhysicalPage = actualBodyStart + offset;
+                        }
+
+                        const folioNum = getDisplayPageNum(resolvedPhysicalPage);
+                        numSpan.textContent = padFolios ? String(folioNum).padStart(2, '0') : String(folioNum);
+                    });
                 }
             }
         }
