@@ -40,6 +40,7 @@
             --base-font-size: 10pt;
             --base-leading: 14pt;
             --baseline-increment: var(--base-leading);
+            --p-ti: 5mm;
             
             --guide-color: rgba(0, 255, 255, 0.4);
             --guide-fill-color: rgba(255, 0, 255, 0.1);
@@ -376,7 +377,6 @@
         }
 
         /* HARD-LOCKED Facing Pages Setup */
-        /* Instead of fragile :nth-child, we assign exact classes so they don't break during imposition */
         .facing-enabled .page.odd-page {
             padding: var(--m-top) var(--m-outside) var(--m-bottom) var(--m-inside);
             border-left: 1px solid rgba(0,0,0,0.05);
@@ -399,8 +399,8 @@
             position: relative;
             column-count: var(--grid-cols);
             column-gap: var(--grid-gutter);
-            column-fill: auto; /* Fill columns sequentially to allow measurement */
-            overflow: hidden; /* Clips any subpixel bleed and enforces standard scrollWidth measurement */
+            column-fill: auto;
+            overflow: hidden;
         }
 
         /* Document Typography Styles */
@@ -448,8 +448,8 @@
             list-style-type: none;
         }
         .page li { 
-            margin-bottom: 4pt; 
-            break-inside: avoid; /* Prevent awkward breaks inside TOC chapters */
+            margin-bottom: 0; /* Keep list items locked to the baseline increment */
+            break-inside: avoid;
         }
         .page ul li::marker { content: var(--bullet-char); color: var(--primary-blue); }
 
@@ -472,8 +472,6 @@
         .grid-overlay .grid-cell { border: 1px solid var(--guide-color); }
         .grid-overlay .grid-cell::after { content: ''; display: block; width: 100%; height: 100%; background-color: var(--guide-fill-color); }
 
-
-
         /* Baseline Grid Implementation */
         .show-baseline .page-content {
             background-image: linear-gradient(to bottom, var(--baseline-color) 1px, transparent 1px);
@@ -481,14 +479,12 @@
             
             /* 
                Calculate the exact baseline:
-               (line-height - font-size) / 2 = half-leading (the space above the text)
-               + font-size = brings us down to the bottom of the text
-               - 2px (optical baseline offset depending on font family ascenders/descenders)
+               1. (var(--baseline-increment) - var(--base-font-size)) / 2 = top half-leading
+               2. + (var(--base-font-size) * 0.8) = ascender depth from top of em-square to baseline
+               3. - 1px = aligns bottom of the 1px gradient stroke with the text baseline
             */
-            background-position: left calc(((var(--baseline-increment) - var(--base-font-size)) / 2) + var(--base-font-size) - 2px);
+            background-position: 0 calc(((var(--baseline-increment) - var(--base-font-size)) / 2) + (var(--base-font-size) * 0.8) - 1px);
         }
-
-        
 
         /* Page Numbering */
         .page-number {
@@ -612,10 +608,8 @@
         #preflight-doc-container {
             display: flex; flex-wrap: wrap; gap: 0; justify-content: center; padding: 40px;
         }
-        /* Override for Preflight layout flows */
         .imposition-2up { flex-direction: column !important; align-items: center; gap: 20px !important; }
         
-        /* The Physical A4 Sheet wrapper for 2-Up Imposition */
         .print-sheet {
             display: flex; flex-direction: row; background: white; margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;
@@ -634,87 +628,78 @@
         }
 
         /* --- FLAWLESS NATIVE PDF EXPORT --- */
-    @media print {
-      /* Force the DOM to unroll itself for the print crawler */
-      body, html { 
-        height: auto !important; 
-        width: 100% !important;
-        overflow: visible !important; 
-        background: white !important; 
-        margin: 0 !important; 
-        padding: 0 !important; 
-      }
-       
-      /* Hide UI Panels */
-      #ui-panel, #pip-editor, #unfold-btn, #unfold-tooltip, .modal-overlay { display: none !important; }
-       
-      /* Dismantle workspace locking constraints */
-      #workspace, #canvas { 
-        background: none !important; 
-        overflow: visible !important; 
-        position: static !important; 
-        display: block !important; 
-        width: 100% !important;
-        height: auto !important;
-        transform: none !important;
-      }
-       
-      /* Allow standard page breaks */
-      #document-container { 
-        padding: 0 !important; 
-        width: 100% !important; 
-        display: block !important; 
-        margin: 0 !important;
-      }
-       
-      /* Base Page Formatting for Print */
-      .page { 
-        margin: 0 !important; 
-        box-shadow: none !important; 
-        border: none !important; 
-        page-break-after: always !important; 
-        break-after: page !important; 
-        /* Prevent margin collapsing from creating extra blank pages */
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        width: var(--doc-width) !important;
-        height: var(--doc-height) !important;
-        overflow: hidden !important;
-      }
-       
-      /* Special handling for sheets (2-up/Booklet) */
-      .print-sheet { 
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important; /* CRITICAL: Prevent 2-up wrap breaking */
-        width: 100% !important;       /* Expand to fill the explicit @page rule */
-        height: var(--doc-height) !important;
-        box-shadow: none !important; 
-        margin: 0 !important; 
-        padding: 0 !important;
-        page-break-after: always !important; 
-        break-after: page !important; 
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        overflow: hidden !important;  /* Cut off sub-pixel overflow to prevent blank pages */
-      }
-      
-      .print-sheet .page { 
-        flex: 0 0 50% !important;     /* Each page takes exactly half */
-        width: 50% !important;
-        height: 100% !important;
-        page-break-after: avoid !important; /* No breaking inside the sheet */
-        break-after: avoid !important;
-        margin: 0 !important;
-      }
-      
-      .print-sheet.show-fold-marks::after { 
-        border-left: 1px dashed #000; 
-        /* Prevent the fold mark from adding width that breaks flexbox */
-        content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 0;
-      }
-    }
-     
+        @media print {
+          body, html { 
+            height: auto !important; 
+            width: 100% !important;
+            overflow: visible !important; 
+            background: white !important; 
+            margin: 0 !important; 
+            padding: 0 !important; 
+          }
+          
+          #ui-panel, #pip-editor, #unfold-btn, #unfold-tooltip, .modal-overlay { display: none !important; }
+          
+          #workspace, #canvas { 
+            background: none !important; 
+            overflow: visible !important; 
+            position: static !important; 
+            display: block !important; 
+            width: 100% !important; 
+            height: auto !important; 
+            transform: none !important; 
+          }
+          
+          #document-container { 
+            padding: 0 !important; 
+            width: 100% !important; 
+            display: block !important; 
+            margin: 0 !important; 
+          }
+          
+          .page { 
+            margin: 0 !important; 
+            box-shadow: none !important; 
+            border: none !important; 
+            page-break-after: always !important; 
+            break-after: page !important; 
+            page-break-inside: avoid !important; 
+            break-inside: avoid !important; 
+            width: var(--doc-width) !important;
+            height: var(--doc-height) !important;
+            overflow: hidden !important;
+          }
+          
+          .print-sheet { 
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            width: 100% !important;
+            height: var(--doc-height) !important;
+            box-shadow: none !important; 
+            margin: 0 !important; 
+            padding: 0 !important;
+            page-break-after: always !important; 
+            break-after: page !important; 
+            page-break-inside: avoid !important; 
+            break-inside: avoid !important; 
+            overflow: hidden !important;
+          }
+          
+          .print-sheet .page { 
+            flex: 0 0 50% !important;
+            width: 50% !important;
+            height: 100% !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            margin: 0 !important;
+          }
+          
+          .print-sheet.show-fold-marks::after { 
+            border-left: 1px dashed #000; 
+            content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 0;
+          }
+        }
     </style>
 </head>
 <body class="show-extras">
@@ -1205,7 +1190,7 @@
 </ul>
 <h2>I. Warum Mietkampfgruppen?</h2>
 <p>Wir als Mietgewerkschaft wollen zusammen als Nachbarschaft im Stadtteil Strukturen entwickeln, mit denen wir in der Lage sind, gemeinsam gegen die alltäglichen Zumutungen der kapitalistischen Gesellschaft zu kämpfen. Wir verfolgen also nicht (nur) das Ziel, Einzelnen mit individuellen Problemen zu helfen. Stattdessen bieten wir Strukturen an, um sich an Mietkämpfen und Ähnlichem zu beteiligen.</p>
-<p>Die Mietgewerkschaft Leipzig ist also vor allem darauf ausgelegt, Mietkämpfe und Anliegen von Mieter*innen zusammenzulegen und dann gemeinsam gegen die Ungerechtigkeiten vorzugehen. Wir wollen somit eine Plattform sein, über die sich Menschen kennenlernen und über die sie möglicherweise auch kommunizieren und sich im Kampf gegen Vermieter und Immobilienkonzerne verbünden können. Dafür schlagen wir als zentrales Organ der Mietgewerkschaft die Mietkampfgruppen vor. Was genau die Mietkampfgruppen sind und wie sie funktionieren, erfahrt ihr in dieser Broschüre.</p>
+<p>Die Mietgewerkschaft Leipzig ist also vor allem darauf ausgelegt, Mietkämpfe und Anliegen von Mieter*innen zusammenzulegen und dann gemeinsam gegen die Ungerechtigkeiten vorzugehen. Wir wollen somit eine Plattform sein, über die sich Menschen kennenlernen und über die sie möglicherweise auch kommunizieren und sich im Kampf gegen Vermieter und Immobilienkonzerne verbünden können. Dafür schlagen wir als zentrales Organ der Mietkampfgruppen vor. Was genau die Mietkampfgruppen sind und wie sie funktionieren, erfahrt ihr in dieser Broschüre.</p>
                 `;
 
                 this.pipPanel = document.getElementById('pip-editor');
@@ -1441,24 +1426,20 @@
 
                 const renderPreview = () => {
                     pfDoc.innerHTML = '';
-                    // Pull only actual rendered pages
                     const pages = Array.from(this.docContainer.querySelectorAll('.page:not(.blank-page)'));
                     const layout = layoutSel.value;
                     const marks = foldCb.checked;
                     
-                    // Maintain margin geometry visually
                     pfDoc.className = this.docContainer.className;
                     pfDoc.classList.add('imposition-container');
                     
                     if (layout === 'spreads' || layout === 'booklet') {
                         pfDoc.classList.add('imposition-2up');
-                        pfDoc.style.width = 'auto'; // Flex row stacking
+                        pfDoc.style.width = 'auto';
                         
                         let clonedPages = pages.map(p => p.cloneNode(true));
                         
                         if (layout === 'booklet') {
-                            // True Saddle-Stitch Logic
-                            // Pad to multiple of 4
                             while(clonedPages.length % 4 !== 0) {
                                 clonedPages.push(createBlankPage());
                             }
@@ -1467,17 +1448,16 @@
                             for (let i = 0; i < total / 2; i++) {
                                 let sheet = createSheet(marks);
                                 if (i % 2 === 0) {
-                                    sheet.appendChild(clonedPages[total - 1 - i]); // Left: Back
-                                    sheet.appendChild(clonedPages[i]);             // Right: Front
+                                    sheet.appendChild(clonedPages[total - 1 - i]);
+                                    sheet.appendChild(clonedPages[i]);
                                 } else {
-                                    sheet.appendChild(clonedPages[i]);             // Left: Inner Front
-                                    sheet.appendChild(clonedPages[total - 1 - i]); // Right: Inner Back
-                                    sheet.classList.add('sheet-back-side');        // Mark as backside for optional rotation
+                                    sheet.appendChild(clonedPages[i]);
+                                    sheet.appendChild(clonedPages[total - 1 - i]);
+                                    sheet.classList.add('sheet-back-side');
                                 }
                                 pfDoc.appendChild(sheet);
                             }
                         } else {
-                            // Sequential 2-Up Spreads
                             for(let i=0; i < clonedPages.length; i+=2) {
                                 let sheet = createSheet(marks);
                                 sheet.appendChild(clonedPages[i]);
@@ -1486,7 +1466,6 @@
                                 } else {
                                     sheet.appendChild(createBlankPage());
                                 }
-                                // If it's a spread, every odd sheet is technically a back side if printing double-sided
                                 if ((i/2) % 2 !== 0) {
                                     sheet.classList.add('sheet-back-side');
                                 }
@@ -1494,13 +1473,11 @@
                             }
                         }
                     } else {
-                        // Single Pages
                         pfDoc.classList.remove('imposition-2up');
                         pfDoc.style.width = `calc((var(--doc-width) * 2) + 120px)`; 
                         pages.forEach(p => pfDoc.appendChild(p.cloneNode(true)));
                     }
                     
-                    // Scale to fit preview window
                     setTimeout(() => {
                         const area = document.getElementById('pf-preview-area');
                         const scaleX = (area.clientWidth - 100) / pfDoc.scrollWidth;
@@ -1537,52 +1514,45 @@
                     }
                 });
                 
-                        // WYSIWYG Print Execution
                 const triggerPrint = (layout, marks) => {
                   const originalHTML = this.docContainer.innerHTML;
                   const originalClasses = this.docContainer.className;
-                   
-                  // Push the formatted imposition straight into the main DOM for printing
+                  
                   renderPreview(); 
                   this.docContainer.innerHTML = pfDoc.innerHTML;
                   this.docContainer.className = pfDoc.className;
         
-                  // Dynamically set @page dimensions to force correct print dialog orientation
                   const style = document.createElement('style');
                   style.id = 'print-page-style';
                   let width = getComputedStyle(document.documentElement).getPropertyValue('--doc-width').trim();
                   let height = getComputedStyle(document.documentElement).getPropertyValue('--doc-height').trim();
                   
-                  const preset = document.getElementById('doc-preset').value; // 'A4', 'A5', 'A6'
+                  const preset = document.getElementById('doc-preset').value;
         
                   let pageRule = '';
                   if (layout === 'spreads' || layout === 'booklet') {
-                    // Map single page presets to their landscape parent to guarantee orientation switch
                     let landscapeSize = '';
-                    if (preset === 'A4') landscapeSize = 'A3 landscape'; // 2-Up A4 sits on A3 Landscape
-                    else if (preset === 'A5') landscapeSize = 'A4 landscape'; // 2-Up A5 sits on A4 Landscape
-                    else if (preset === 'A6') landscapeSize = 'A5 landscape'; // 2-Up A6 sits on A5 Landscape
+                    if (preset === 'A4') landscapeSize = 'A3 landscape';
+                    else if (preset === 'A5') landscapeSize = 'A4 landscape';
+                    else if (preset === 'A6') landscapeSize = 'A5 landscape';
                     else {
-                      // Fallback for custom dimensions
                       let val = parseFloat(width);
                       let unit = width.replace(/[0-9.]/g, '');
                       landscapeSize = `${(val * 2) + unit} ${height}`;
                     }
                     pageRule = `@page { size: ${landscapeSize}; margin: 0mm; }`;
                   } else {
-                     // Single Page layout
                     pageRule = `@page { size: ${preset ? preset + ' portrait' : width + ' ' + height}; margin: 0mm; }`;
                   }
         
                   style.innerText = pageRule;
                   document.head.appendChild(style);
-                   
+                  
                   const originalTitle = document.title;
                   document.title = "Procedural_Typesetting_Export";
-                   
+                  
                   window.print();
-                   
-                  // Restoration
+                  
                   setTimeout(() => {
                     document.title = originalTitle;
                     document.head.removeChild(style);
@@ -1597,11 +1567,9 @@
                 });
 
                 originalBtnExport.addEventListener('click', () => {
-                    // Export Direct assumes Single Page
                     triggerPrint('single', false);
                 });
 
-                // Zoom and Pan logic for Preflight
                 pfArea.addEventListener('mousedown', (e) => {
                     this.pfIsPanning = true;
                     this.pfStartX = e.clientX - this.pfTranslateX;
@@ -2112,8 +2080,6 @@
                         const currentIdx = this.docContainer.children.length + 1;
                         const page = document.createElement('div');
                         
-                        // FLAWLESS IMPOSITION LOCK: Use classes to hard-lock padding based on index
-                        // This guarantees the margin doesn't shift if the page moves to an odd position on a saddle-stitch sheet
                         page.className = `page ${currentIdx % 2 !== 0 ? 'odd-page' : 'even-page'}`;
                         
                         const content = document.createElement('div');
