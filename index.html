@@ -472,12 +472,23 @@
         .grid-overlay .grid-cell { border: 1px solid var(--guide-color); }
         .grid-overlay .grid-cell::after { content: ''; display: block; width: 100%; height: 100%; background-color: var(--guide-fill-color); }
 
+
+
         /* Baseline Grid Implementation */
         .show-baseline .page-content {
             background-image: linear-gradient(to bottom, var(--baseline-color) 1px, transparent 1px);
             background-size: 100% var(--baseline-increment);
-            background-position: left calc(var(--base-font-size) - 1px);
+            
+            /* 
+               Calculate the exact baseline:
+               (line-height - font-size) / 2 = half-leading (the space above the text)
+               + font-size = brings us down to the bottom of the text
+               - 2px (optical baseline offset depending on font family ascenders/descenders)
+            */
+            background-position: left calc(((var(--baseline-increment) - var(--base-font-size)) / 2) + var(--base-font-size) - 2px);
         }
+
+        
 
         /* Page Numbering */
         .page-number {
