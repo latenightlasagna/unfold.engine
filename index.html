@@ -623,32 +623,87 @@
         }
 
         /* --- FLAWLESS NATIVE PDF EXPORT --- */
-        @media print {
-            /* Force the DOM to unroll itself for the print crawler */
-            body, html { height: auto !important; overflow: visible !important; background: white !important; margin: 0; padding: 0; }
-            
-            /* Hide UI Panels */
-            #ui-panel, #pip-editor, #unfold-btn, #unfold-tooltip, .modal-overlay { display: none !important; }
-            
-            /* Dismantle workspace locking constraints */
-            #workspace { background: none !important; overflow: visible !important; position: static !important; display: block !important; }
-            #canvas { position: static !important; transform: none !important; display: block !important; }
-            
-            /* Allow standard page breaks */
-            #document-container { padding: 0 !important; width: 100% !important; display: block !important; }
-            
-            .page { 
-                margin: 0 !important; 
-                box-shadow: none !important; 
-                border: none !important; 
-                page-break-after: always !important; 
-            }
-            
-            /* Special handling for sheets (2-up/Booklet) */
-            .print-sheet { box-shadow: none !important; margin: 0 !important; page-break-after: always !important; break-after: page !important; }
-            .print-sheet .page { page-break-after: avoid !important; }
-            .print-sheet.show-fold-marks::after { border-left: 1px dashed #000; }
-        }
+    @media print {
+      /* Force the DOM to unroll itself for the print crawler */
+      body, html { 
+        height: auto !important; 
+        width: 100% !important;
+        overflow: visible !important; 
+        background: white !important; 
+        margin: 0 !important; 
+        padding: 0 !important; 
+      }
+       
+      /* Hide UI Panels */
+      #ui-panel, #pip-editor, #unfold-btn, #unfold-tooltip, .modal-overlay { display: none !important; }
+       
+      /* Dismantle workspace locking constraints */
+      #workspace, #canvas { 
+        background: none !important; 
+        overflow: visible !important; 
+        position: static !important; 
+        display: block !important; 
+        width: 100% !important;
+        height: auto !important;
+        transform: none !important;
+      }
+       
+      /* Allow standard page breaks */
+      #document-container { 
+        padding: 0 !important; 
+        width: 100% !important; 
+        display: block !important; 
+        margin: 0 !important;
+      }
+       
+      /* Base Page Formatting for Print */
+      .page { 
+        margin: 0 !important; 
+        box-shadow: none !important; 
+        border: none !important; 
+        page-break-after: always !important; 
+        break-after: page !important; 
+        /* Prevent margin collapsing from creating extra blank pages */
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        width: var(--doc-width) !important;
+        height: var(--doc-height) !important;
+        overflow: hidden !important;
+      }
+       
+      /* Special handling for sheets (2-up/Booklet) */
+      .print-sheet { 
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important; /* CRITICAL: Prevent 2-up wrap breaking */
+        width: 100% !important;       /* Expand to fill the explicit @page rule */
+        height: var(--doc-height) !important;
+        box-shadow: none !important; 
+        margin: 0 !important; 
+        padding: 0 !important;
+        page-break-after: always !important; 
+        break-after: page !important; 
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        overflow: hidden !important;  /* Cut off sub-pixel overflow to prevent blank pages */
+      }
+      
+      .print-sheet .page { 
+        flex: 0 0 50% !important;     /* Each page takes exactly half */
+        width: 50% !important;
+        height: 100% !important;
+        page-break-after: avoid !important; /* No breaking inside the sheet */
+        break-after: avoid !important;
+        margin: 0 !important;
+      }
+      
+      .print-sheet.show-fold-marks::after { 
+        border-left: 1px dashed #000; 
+        /* Prevent the fold mark from adding width that breaks flexbox */
+        content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 0;
+      }
+    }
+     
     </style>
 </head>
 <body class="show-extras">
@@ -1471,44 +1526,58 @@
                     }
                 });
                 
-                // WYSIWYG Print Execution
+                        // WYSIWYG Print Execution
                 const triggerPrint = (layout, marks) => {
-                    const originalHTML = this.docContainer.innerHTML;
-                    const originalClasses = this.docContainer.className;
-                    
-                    // Push the formatted imposition straight into the main DOM for printing
-                    renderPreview(); 
-                    this.docContainer.innerHTML = pfDoc.innerHTML;
-                    this.docContainer.className = pfDoc.className;
-
-                    // Dynamically set @page dimensions to strip browser headers
-                    const style = document.createElement('style');
-                    style.id = 'print-page-style';
-                    let width = getComputedStyle(document.documentElement).getPropertyValue('--doc-width').trim();
-                    let height = getComputedStyle(document.documentElement).getPropertyValue('--doc-height').trim();
-                    
-                    let printWidth = width;
-                    if (layout === 'spreads' || layout === 'booklet') {
-                        let val = parseFloat(width);
-                        let unit = width.replace(/[0-9.]/g, '');
-                        printWidth = (val * 2) + unit;
+                  const originalHTML = this.docContainer.innerHTML;
+                  const originalClasses = this.docContainer.className;
+                   
+                  // Push the formatted imposition straight into the main DOM for printing
+                  renderPreview(); 
+                  this.docContainer.innerHTML = pfDoc.innerHTML;
+                  this.docContainer.className = pfDoc.className;
+        
+                  // Dynamically set @page dimensions to force correct print dialog orientation
+                  const style = document.createElement('style');
+                  style.id = 'print-page-style';
+                  let width = getComputedStyle(document.documentElement).getPropertyValue('--doc-width').trim();
+                  let height = getComputedStyle(document.documentElement).getPropertyValue('--doc-height').trim();
+                  
+                  const preset = document.getElementById('doc-preset').value; // 'A4', 'A5', 'A6'
+        
+                  let pageRule = '';
+                  if (layout === 'spreads' || layout === 'booklet') {
+                    // Map single page presets to their landscape parent to guarantee orientation switch
+                    let landscapeSize = '';
+                    if (preset === 'A4') landscapeSize = 'A3 landscape'; // 2-Up A4 sits on A3 Landscape
+                    else if (preset === 'A5') landscapeSize = 'A4 landscape'; // 2-Up A5 sits on A4 Landscape
+                    else if (preset === 'A6') landscapeSize = 'A5 landscape'; // 2-Up A6 sits on A5 Landscape
+                    else {
+                      // Fallback for custom dimensions
+                      let val = parseFloat(width);
+                      let unit = width.replace(/[0-9.]/g, '');
+                      landscapeSize = `${(val * 2) + unit} ${height}`;
                     }
-                    
-                    style.innerText = `@page { size: ${printWidth} ${height}; margin: 0; }`;
-                    document.head.appendChild(style);
-                    
-                    const originalTitle = document.title;
-                    document.title = "Procedural_Typesetting_Export";
-                    
-                    window.print();
-                    
-                    // Restoration
-                    setTimeout(() => {
-                        document.title = originalTitle;
-                        document.head.removeChild(style);
-                        this.docContainer.innerHTML = originalHTML;
-                        this.docContainer.className = originalClasses;
-                    }, 1500);
+                    pageRule = `@page { size: ${landscapeSize}; margin: 0mm; }`;
+                  } else {
+                     // Single Page layout
+                    pageRule = `@page { size: ${preset ? preset + ' portrait' : width + ' ' + height}; margin: 0mm; }`;
+                  }
+        
+                  style.innerText = pageRule;
+                  document.head.appendChild(style);
+                   
+                  const originalTitle = document.title;
+                  document.title = "Procedural_Typesetting_Export";
+                   
+                  window.print();
+                   
+                  // Restoration
+                  setTimeout(() => {
+                    document.title = originalTitle;
+                    document.head.removeChild(style);
+                    this.docContainer.innerHTML = originalHTML;
+                    this.docContainer.className = originalClasses;
+                  }, 1500);
                 };
                 
                 btnPrint.addEventListener('click', () => {
