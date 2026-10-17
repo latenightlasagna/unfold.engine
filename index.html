@@ -29,7 +29,7 @@
             --m-inside: 16mm;
             --m-outside: 20mm;
             
-            /* Typography */
+            /* Body Typography */
             --base-font-size: 10pt;
             --base-leading: 14pt;
             --baseline-increment: var(--base-leading);
@@ -41,6 +41,14 @@
             --text-align-last: left;
             --split-align-last: justify;
             --widow-orphan-lines: 1;
+
+            /* Heading Scale & Auto-Leading Variables */
+            --h1-size: 24pt;
+            --h1-leading: 28.03pt;
+            --h2-size: 16pt;
+            --h2-leading: 19.56pt;
+            --h3-size: 13pt;
+            --h3-leading: 16.38pt;
 
             /* Grid Systems Defaults */
             --grid-cols: 1;
@@ -250,6 +258,51 @@
             gap: 8px;
         }
 
+        /* Heading Scale Matrix Table */
+        .heading-scale-matrix {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: #f8f8fa;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #e6e6e6;
+        }
+        .heading-matrix-row {
+            display: grid;
+            grid-template-columns: 32px 1fr 1fr 54px;
+            gap: 6px;
+            align-items: center;
+        }
+        .heading-matrix-head {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            text-transform: uppercase;
+            color: var(--ui-text-muted);
+            padding-bottom: 2px;
+            border-bottom: 1px solid #e2e2e2;
+        }
+        .heading-tag-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary-blue);
+            background: var(--primary-blue-soft);
+            padding: 4px 0;
+            text-align: center;
+            border-radius: 3px;
+        }
+        .heading-computed-pt {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--ui-text);
+            text-align: right;
+            background: #ececf2;
+            padding: 5px 6px;
+            border-radius: 3px;
+        }
+
         /* Level Pill Toggles for TOC */
         .pill-group {
             display: flex;
@@ -305,6 +358,11 @@
             background: #ffffff;
             border-color: var(--primary-blue);
             box-shadow: 0 0 0 2px var(--focus-ring);
+        }
+        input:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            background: #ebebeb;
         }
         input[type="checkbox"] { accent-color: var(--primary-blue); width: 14px; height: 14px; cursor: pointer; }
         input[type="color"] {
@@ -442,14 +500,14 @@
         .align-btn.active { background: #e3e6ff; color: var(--primary-blue); box-shadow: inset 0 0 0 1px var(--primary-blue); }
 
         .input-suffix {
-            display: flex; align-items: center; gap: 5px;
+            display: flex; align-items: center; gap: 4px;
         }
         .input-suffix input { flex: 1; min-width: 0; }
         .input-suffix span {
             font-family: 'IBM Plex Mono', monospace;
             font-size: 10px;
             color: var(--ui-text-muted);
-            min-width: 18px;
+            min-width: 14px;
         }
 
         .slider-group { padding: 4px 0; }
@@ -695,24 +753,55 @@
             width: 100%;
             height: 100%;
             position: relative;
+            font-size: var(--base-font-size);
+            line-height: var(--baseline-increment);
             column-count: var(--grid-cols);
             column-gap: var(--grid-gutter);
             column-fill: auto;
             overflow: hidden;
         }
 
-        /* Document Typography Styles */
+        /* Document Typography & Optical Auto-Leading Heading Styles */
         .page h1, .page h2, .page h3 {
             text-align: left;
             text-align-last: auto;
             hyphens: none;
             word-spacing: normal;
             break-after: avoid;
+            break-inside: avoid;
         }
         
-        .page h1 { font-size: 24pt; line-height: calc(var(--baseline-increment) * 2); margin-top: 0; margin-bottom: var(--baseline-increment); font-weight: 700; column-span: all; }
-        .page h2 { font-size: 16pt; line-height: calc(var(--baseline-increment) * 2); margin-top: var(--baseline-increment); margin-bottom: 0; font-weight: 500; }
-        .page h3 { font-size: 14pt; line-height: var(--baseline-increment); margin-top: var(--baseline-increment); margin-bottom: 0; font-weight: 600; }
+        .page h1 {
+            font-size: var(--h1-size, 24pt);
+            line-height: var(--h1-leading, 28.03pt);
+            margin-top: 0;
+            margin-bottom: var(--baseline-increment);
+            font-weight: 700;
+            letter-spacing: -0.015em;
+            column-span: all;
+        }
+        .page h2 {
+            font-size: var(--h2-size, 16pt);
+            line-height: var(--h2-leading, 19.56pt);
+            margin-top: var(--baseline-increment);
+            margin-bottom: 0;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .page h3 {
+            font-size: var(--h3-size, 13pt);
+            line-height: var(--h3-leading, 16.38pt);
+            margin-top: var(--baseline-increment);
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+
+        /* Suppress top margin when a heading lands as the first element of a page */
+        .page-content > h1:first-child,
+        .page-content > h2:first-child,
+        .page-content > h3:first-child {
+            margin-top: 0 !important;
+        }
         
         .page p { 
             font-size: var(--base-font-size); 
@@ -766,7 +855,7 @@
         /* --- PROFESSIONAL EDITORIAL TABLE OF CONTENTS STYLES --- */
         .page h1.toc-header-title {
             font-size: 20pt;
-            line-height: calc(var(--baseline-increment) * 2);
+            line-height: 23.8pt;
             margin-top: 0;
             margin-bottom: var(--baseline-increment);
             font-weight: 700;
@@ -1637,9 +1726,69 @@
             <details class="accordion" open>
                 <summary>
                     <span class="summary-left"><span class="step-num">04</span> Typography &amp; Rhythm</span>
-                    <span class="summary-right"><span class="summary-meta">10 / 14pt</span><span class="arrow"></span></span>
+                    <span class="summary-right"><span class="summary-meta">Auto-Lead · 10/14pt</span><span class="arrow"></span></span>
                 </summary>
                 <div class="accordion-content">
+                    <!-- Heading Scale & Auto-Leading Card -->
+                    <div class="gestalt-card">
+                        <div class="card-header">
+                            <h3 class="subsection-title">Heading Scale &amp; Auto-Leading</h3>
+                            <div class="control-group checkbox-row" style="flex:0;">
+                                <input type="checkbox" id="h-auto-curve" checked>
+                                <label for="h-auto-curve" title="Automatically calculate optimal optical leading ratio from point size">Auto Curve</label>
+                            </div>
+                        </div>
+
+                        <div class="control-grid">
+                            <div class="control-group">
+                                <label for="h-leading-mode">Leading Engine</label>
+                                <select id="h-leading-mode">
+                                    <option value="optical-snap" selected>Optical Auto + Grid Snap</option>
+                                    <option value="optical-free">Optical Auto (Unquantized)</option>
+                                    <option value="strict-grid">Strict Grid Multiples</option>
+                                </select>
+                            </div>
+                            <div class="control-group" id="h-anchor-group">
+                                <label for="h-baseline-anchor">Baseline Anchor</label>
+                                <select id="h-baseline-anchor">
+                                    <option value="last" selected>Last Line on Baseline</option>
+                                    <option value="first">First Line on Baseline</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="heading-scale-matrix">
+                            <div class="heading-matrix-row heading-matrix-head">
+                                <span>Tag</span>
+                                <span>Font Size</span>
+                                <span>Lead Ratio</span>
+                                <span style="text-align:right;">Leading</span>
+                            </div>
+                            <!-- H1 Row -->
+                            <div class="heading-matrix-row">
+                                <span class="heading-tag-badge">H1</span>
+                                <div class="input-suffix"><input type="number" id="h1-size" value="24" min="12" max="60" step="1"><span>pt</span></div>
+                                <div class="input-suffix"><input type="number" id="h1-ratio" value="1.17" min="0.95" max="2.0" step="0.01" disabled><span>×</span></div>
+                                <span class="heading-computed-pt" id="h1-pt-display">28.0pt</span>
+                            </div>
+                            <!-- H2 Row -->
+                            <div class="heading-matrix-row">
+                                <span class="heading-tag-badge">H2</span>
+                                <div class="input-suffix"><input type="number" id="h2-size" value="16" min="10" max="42" step="0.5"><span>pt</span></div>
+                                <div class="input-suffix"><input type="number" id="h2-ratio" value="1.22" min="0.95" max="2.0" step="0.01" disabled><span>×</span></div>
+                                <span class="heading-computed-pt" id="h2-pt-display">19.6pt</span>
+                            </div>
+                            <!-- H3 Row -->
+                            <div class="heading-matrix-row">
+                                <span class="heading-tag-badge">H3</span>
+                                <div class="input-suffix"><input type="number" id="h3-size" value="13" min="9" max="32" step="0.5"><span>pt</span></div>
+                                <div class="input-suffix"><input type="number" id="h3-ratio" value="1.26" min="0.95" max="2.0" step="0.01" disabled><span>×</span></div>
+                                <span class="heading-computed-pt" id="h3-pt-display">16.4pt</span>
+                            </div>
+                        </div>
+                        <div class="help-text" id="h-leading-info">Per-element auto-leading active · All headings quantized to 14pt grid</div>
+                    </div>
+
                     <!-- Font Assignment Card -->
                     <div class="gestalt-card">
                         <div class="card-header">
@@ -1936,7 +2085,7 @@
                 this.bodyTextBlocks = [];
                 this.inlineTocIndices = new Set();
                 
-                // Pre-formatted HTML Seed
+                // Pre-formatted HTML Seed (with H1, H2, and H3 headings to demonstrate auto-leading)
                 this.rawBodyHTML = `
 <h1>Inhalte und Ideen für deine Mietkampfgruppe</h1>
 <p>Ein Leitfaden der Mietgewerkschaft Leipzig für gemeinsame Kämpfe im Stadtteil</p>
@@ -1982,6 +2131,8 @@
 <h2>I. Warum Mietkampfgruppen?</h2>
 <p>Wir als Mietgewerkschaft wollen zusammen als Nachbarschaft im Stadtteil Strukturen entwickeln, mit denen wir in der Lage sind, gemeinsam gegen die alltäglichen Zumutungen der kapitalistischen Gesellschaft zu kämpfen. Wir verfolgen also nicht (nur) das Ziel, Einzelnen mit individuellen Problemen zu helfen. Stattdessen bieten wir Strukturen an, um sich an Mietkämpfen und Ähnlichem zu beteiligen.</p>
 <p>Die Mietgewerkschaft Leipzig ist also vor allem darauf ausgelegt, Mietkämpfe und Anliegen von Mieter*innen zusammenzulegen und dann gemeinsam gegen die Ungerechtigkeiten vorzugehen. Wir wollen somit eine Plattform sein, über die sich Menschen kennenlernen und über die sie möglicherweise auch kommunizieren und sich im Kampf gegen Vermieter und Immobilienkonzerne verbünden können. Dafür schlagen wir als zentrales Organ der Mietkampfgruppen vor. Was genau die Mietkampfgruppen sind und wie sie funktionieren, erfahrt ihr in dieser Broschüre.</p>
+<h2>II. Das ist eine Mietkampfgruppe und das will sie im Stadtteil erreichen</h2>
+<h3>Kollektive Selbstorganisation und gegenseitige Unterstützung im Haus</h3>
 <p>In einer Mietkampfgruppe kommen Menschen aus einem Stadtteil oder einer Nachbarschaft regelmäßig zusammen, um über steigende Mieten, vernachlässigte Instandhaltung, fehlerhafte Nebenkostenabrechnungen oder Verdrängung zu sprechen und kollektive Gegenwehr zu organisieren. Denn während einzelne Mieter*innen gegenüber großen Hausverwaltungen und Immobilienkonzernen oft isoliert und machtlos wirken, verändert sich das Kräfteverhältnis grundlegend, sobald ein ganzes Haus oder ein Straßenzug solidarisch auftritt und gemeinsamen Druck entfaltet.</p>
                 `;
 
@@ -1995,7 +2146,7 @@
                 this.initPIPEditor();
                 this.initPreflight();
                 
-                const cachedText = localStorage.getItem('typesetting-pip-cache-v2');
+                const cachedText = localStorage.getItem('typesetting-pip-cache-v3');
                 if (cachedText) {
                     this.pipContent.innerHTML = cachedText;
                 } else {
@@ -2003,6 +2154,73 @@
                 }
                 
                 this.updateFromPIP();
+            }
+
+            // Inverse Optical Auto-Leading Curve: larger display type gets tighter relative leading
+            computeOpticalAutoRatio(fontSizePt) {
+                const raw = 1.06 + (2.6 / Math.max(8, fontSizePt));
+                return Math.min(1.36, Math.max(1.10, +raw.toFixed(2)));
+            }
+
+            // Per-element measurement & baseline quantization for every individual H1, H2, H3
+            applyHeadingAutoLeading(headingEl, containerEl) {
+                if (!headingEl || !['H1', 'H2', 'H3'].includes(headingEl.tagName)) return;
+
+                // Reset inline box adjustments before measuring intrinsic text height
+                headingEl.style.paddingTop = '0px';
+                headingEl.style.paddingBottom = '0px';
+                headingEl.style.height = 'auto';
+
+                const mode = document.getElementById('h-leading-mode')?.value || 'optical-snap';
+                if (mode !== 'optical-snap') return;
+
+                const anchor = document.getElementById('h-baseline-anchor')?.value || 'last';
+
+                const csContainer = getComputedStyle(containerEl);
+                const L = parseFloat(csContainer.lineHeight) || 18.6667; // --baseline-increment in px
+                const F_b = parseFloat(csContainer.fontSize) || 13.3333; // --base-font-size in px
+
+                // Body baseline position inside a standard 1×L grid row
+                const B_b = ((L - F_b) / 2) + (0.8 * F_b);
+                const D_b = L - B_b;
+
+                const csHeading = getComputedStyle(headingEl);
+                const F_h = parseFloat(csHeading.fontSize) || 21.3333;
+                const L_h = parseFloat(csHeading.lineHeight) || (F_h * 1.2);
+
+                // Measure intrinsic wrapped height in unscaled CSS pixels
+                const effectiveScale = (containerEl.getBoundingClientRect().width / (containerEl.clientWidth || 1)) || this.scale || 1;
+                const measuredHeight = headingEl.getBoundingClientRect().height / effectiveScale;
+                const lineCount = Math.max(1, Math.round(measuredHeight / L_h));
+                const H_raw = lineCount * L_h;
+
+                // Distance from top of heading line box to its first baseline, and from last baseline to bottom
+                const B_h1 = ((L_h - F_h) / 2) + (0.8 * F_h);
+                const D_h = L_h - B_h1;
+
+                let P_top = 0;
+                let P_bot = 0;
+                let H_target = 0;
+
+                if (anchor === 'last') {
+                    // Anchor the last line of the heading directly onto a baseline grid line
+                    P_bot = (((D_b - D_h) % L) + L) % L;
+                    const gridUnits = Math.max(1, Math.ceil((H_raw + P_bot - 0.05) / L));
+                    H_target = gridUnits * L;
+                    P_top = Math.max(0, H_target - (H_raw + P_bot));
+                } else {
+                    // Anchor the first line of the heading directly onto a baseline grid line
+                    P_top = (((B_b - B_h1) % L) + L) % L;
+                    const gridUnits = Math.max(1, Math.ceil((P_top + H_raw - 0.05) / L));
+                    H_target = gridUnits * L;
+                    P_bot = Math.max(0, H_target - (P_top + H_raw));
+                }
+
+                headingEl.style.paddingTop = `${P_top.toFixed(3)}px`;
+                headingEl.style.paddingBottom = `${P_bot.toFixed(3)}px`;
+                headingEl.style.height = `${H_target.toFixed(3)}px`;
+                headingEl.dataset.wrappedLines = lineCount;
+                headingEl.dataset.gridSpan = Math.round(H_target / L);
             }
 
             initWorkspace() {
@@ -2198,7 +2416,7 @@
 
             updateFromPIP() {
                 const html = this.pipContent.innerHTML;
-                localStorage.setItem('typesetting-pip-cache-v2', html);
+                localStorage.setItem('typesetting-pip-cache-v3', html);
                 this.parseHTMLToBlocks(html, 'body');
             }
 
@@ -2488,6 +2706,83 @@
                     return parseFloat(baseCustomVal.value) || 4.9;
                 };
 
+                const getBaselineIncrementPt = () => {
+                    return getBaselineIncrementMm() * (72 / 25.4);
+                };
+
+                // --- HEADING SCALE & OPTICAL AUTO-LEADING ENGINE ---
+                const hAutoCurveCb = document.getElementById('h-auto-curve');
+                const hLeadingModeSel = document.getElementById('h-leading-mode');
+                const hAnchorGroup = document.getElementById('h-anchor-group');
+                const hAnchorSel = document.getElementById('h-baseline-anchor');
+                const hInfoEl = document.getElementById('h-leading-info');
+
+                const updateHeadingTypography = () => {
+                    const autoCurve = hAutoCurveCb.checked;
+                    const mode = hLeadingModeSel.value;
+                    const anchor = hAnchorSel.value;
+                    const incPt = getBaselineIncrementPt();
+
+                    hAnchorGroup.style.opacity = mode === 'optical-snap' ? '1' : '0.45';
+                    hAnchorSel.disabled = mode !== 'optical-snap';
+
+                    const levels = [
+                        { tag: 'h1', sizeId: 'h1-size', ratioId: 'h1-ratio', dispId: 'h1-pt-display' },
+                        { tag: 'h2', sizeId: 'h2-size', ratioId: 'h2-ratio', dispId: 'h2-pt-display' },
+                        { tag: 'h3', sizeId: 'h3-size', ratioId: 'h3-ratio', dispId: 'h3-pt-display' }
+                    ];
+
+                    levels.forEach(lvl => {
+                        const sizeInput = document.getElementById(lvl.sizeId);
+                        const ratioInput = document.getElementById(lvl.ratioId);
+                        const dispEl = document.getElementById(lvl.dispId);
+
+                        const sizePt = Math.max(8, parseFloat(sizeInput.value) || 14);
+                        document.documentElement.style.setProperty(`--${lvl.tag}-size`, `${sizePt}pt`);
+
+                        if (mode === 'strict-grid') {
+                            ratioInput.disabled = true;
+                            const mult = Math.max(1, Math.ceil(sizePt / incPt));
+                            const strictPt = mult * incPt;
+                            ratioInput.value = (strictPt / sizePt).toFixed(2);
+                            document.documentElement.style.setProperty(`--${lvl.tag}-leading`, `calc(var(--baseline-increment) * ${mult})`);
+                            dispEl.textContent = `${strictPt.toFixed(1)}pt`;
+                        } else {
+                            ratioInput.disabled = autoCurve;
+                            let ratio = parseFloat(ratioInput.value) || 1.2;
+                            if (autoCurve) {
+                                ratio = this.computeOpticalAutoRatio(sizePt);
+                                ratioInput.value = ratio.toFixed(2);
+                            }
+                            const leadingPt = sizePt * ratio;
+                            document.documentElement.style.setProperty(`--${lvl.tag}-leading`, `${leadingPt.toFixed(2)}pt`);
+                            dispEl.textContent = `${leadingPt.toFixed(1)}pt`;
+                        }
+                    });
+
+                    if (mode === 'optical-snap') {
+                        const anchorLabel = anchor === 'last' ? 'Last line anchored' : 'First line anchored';
+                        hInfoEl.textContent = `${anchorLabel} · Individual H1/H2/H3 heights quantized to ${incPt.toFixed(1)}pt grid`;
+                    } else if (mode === 'optical-free') {
+                        hInfoEl.textContent = `Optical auto-leading active (unquantized block heights)`;
+                    } else {
+                        hInfoEl.textContent = `Strict grid multiples active (lines locked to ${incPt.toFixed(1)}pt steps)`;
+                    }
+
+                    this.queueReflow();
+                };
+
+                [
+                    'h-auto-curve', 'h-leading-mode', 'h-baseline-anchor',
+                    'h1-size', 'h1-ratio', 'h2-size', 'h2-ratio', 'h3-size', 'h3-ratio'
+                ].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.addEventListener('input', updateHeadingTypography);
+                        el.addEventListener('change', updateHeadingTypography);
+                    }
+                });
+
                 const quantizeLines = (mmValue, incMm) => {
                     if (!mmValue || mmValue <= 0) return 0;
                     return Math.max(1, Math.round(mmValue / incMm));
@@ -2578,6 +2873,7 @@
                         baseCustomWrap.style.display = 'flex';
                     }
                     updateStructureGrid();
+                    updateHeadingTypography();
                     updateParagraphSpacing();
                 };
 
@@ -2655,6 +2951,7 @@
                 });
 
                 updateStructureGrid();
+                updateHeadingTypography();
 
                 // --- RUNNING HEADERS UI LISTENERS ---
                 const rhEnableCb = document.getElementById('rh-enable');
@@ -3454,16 +3751,30 @@
                 // Map to record physical page index where each heading lands in Pass 1
                 const headingPageMap = new Map();
 
-                // Helper to carry a dangling heading at the bottom of a page onto the next page
-                const popDanglingHeadingIfPresent = (container) => {
-                    if (container.children.length > 0) {
+                // Helper to carry a dangling heading chain (e.g. H2 + H3) at the bottom of a page onto the next page
+                const popDanglingHeadingsIfPresent = (container) => {
+                    const popped = [];
+                    while (container.children.length > 0) {
                         const lastEl = container.lastElementChild;
                         if (lastEl && ['H1', 'H2', 'H3'].includes(lastEl.tagName)) {
                             container.removeChild(lastEl);
-                            return lastEl;
+                            popped.unshift(lastEl);
+                        } else {
+                            break;
                         }
                     }
-                    return null;
+                    return popped;
+                };
+
+                const restoreDanglingHeadingsOnPage = (headings, container, targetPageIdx, isBody) => {
+                    headings.forEach(h => {
+                        container.appendChild(h);
+                        this.applyHeadingAutoLeading(h, container);
+                        if (isBody) {
+                            const hKey = this.normalizeHeadingKey(h.innerText);
+                            if (hKey) headingPageMap.set(hKey, targetPageIdx);
+                        }
+                    });
                 };
 
                 const flowBlocks = (blocks, startIdx, isBody) => {
@@ -3493,16 +3804,10 @@
 
                             if (isChildOverflowing(currentList, currentContentNode)) {
                                 currentContentNode.removeChild(currentList);
-                                const danglingHeading = popDanglingHeadingIfPresent(currentContentNode);
+                                const danglingHeadings = popDanglingHeadingsIfPresent(currentContentNode);
                                 pageIndex++;
                                 currentContentNode = getOrCreatePage(pageIndex);
-                                if (danglingHeading) {
-                                    currentContentNode.appendChild(danglingHeading);
-                                    if (isBody) {
-                                        const hKey = this.normalizeHeadingKey(danglingHeading.innerText);
-                                        if (hKey) headingPageMap.set(hKey, pageIndex);
-                                    }
-                                }
+                                restoreDanglingHeadingsOnPage(danglingHeadings, currentContentNode, pageIndex, isBody);
                                 currentList = block.cloneNode(false);
                                 currentContentNode.appendChild(currentList);
                             }
@@ -3516,22 +3821,15 @@
                                 if (isChildOverflowing(li, currentContentNode)) {
                                     currentList.removeChild(li);
 
-                                    let danglingHeading = null;
+                                    let danglingHeadings = [];
                                     if (currentList.children.length === 0) {
                                         currentContentNode.removeChild(currentList);
-                                        danglingHeading = popDanglingHeadingIfPresent(currentContentNode);
+                                        danglingHeadings = popDanglingHeadingsIfPresent(currentContentNode);
                                     }
 
                                     pageIndex++;
                                     currentContentNode = getOrCreatePage(pageIndex);
-
-                                    if (danglingHeading) {
-                                        currentContentNode.appendChild(danglingHeading);
-                                        if (isBody) {
-                                            const hKey = this.normalizeHeadingKey(danglingHeading.innerText);
-                                            if (hKey) headingPageMap.set(hKey, pageIndex);
-                                        }
-                                    }
+                                    restoreDanglingHeadingsOnPage(danglingHeadings, currentContentNode, pageIndex, isBody);
 
                                     currentList = block.cloneNode(false);
                                     if (block.tagName === 'OL') {
@@ -3598,7 +3896,6 @@
 
                                     // 3. Validate orphan/widow constraints and dropcap height requirements
                                     if (bestEndWord !== -1) {
-                                        // Avoid leaving a single 1-word widow on the next page when widow guard is active
                                         if (minSplitLines > 1 && (totalWords - bestEndWord === 1) && (bestEndWord - wordCursor > 3)) {
                                             bestEndWord -= 1;
                                         }
@@ -3613,7 +3910,6 @@
                                         const renderedLines = this.getRenderedLineCount(headFrag);
                                         const requiredLines = useDropcap ? Math.max(minSplitLines, dropcapLines) : minSplitLines;
 
-                                        // If fewer lines fit than required (and page isn't empty), push to next page
                                         if (renderedLines < requiredLines && currentContentNode.children.length > 1) {
                                             currentContentNode.removeChild(headFrag);
                                             bestEndWord = -1;
@@ -3629,7 +3925,6 @@
                                     // 4. If 0 words fit (or orphan guard rejected a 1-line stub at the bottom of the page)
                                     if (bestEndWord === -1) {
                                         if (currentContentNode.children.length === 0) {
-                                            // Failsafe for an oversized single word on an empty page
                                             const forcedFrag = this.createParagraphSlice(block, wordCursor, wordCursor + 1, {
                                                 isFirstFragment: isFirstFrag,
                                                 isLastFragment: (wordCursor + 1 === totalWords),
@@ -3643,17 +3938,10 @@
                                                 currentContentNode = getOrCreatePage(pageIndex);
                                             }
                                         } else {
-                                            // Carry any dangling heading at the bottom of the page along with its paragraph
-                                            const danglingHeading = (wordCursor === 0) ? popDanglingHeadingIfPresent(currentContentNode) : null;
+                                            const danglingHeadings = (wordCursor === 0) ? popDanglingHeadingsIfPresent(currentContentNode) : [];
                                             pageIndex++;
                                             currentContentNode = getOrCreatePage(pageIndex);
-                                            if (danglingHeading) {
-                                                currentContentNode.appendChild(danglingHeading);
-                                                if (isBody) {
-                                                    const hKey = this.normalizeHeadingKey(danglingHeading.innerText);
-                                                    if (hKey) headingPageMap.set(hKey, pageIndex);
-                                                }
-                                            }
+                                            restoreDanglingHeadingsOnPage(danglingHeadings, currentContentNode, pageIndex, isBody);
                                         }
                                     }
                                 }
@@ -3670,20 +3958,22 @@
                         }
                         
                         currentContentNode.appendChild(clone);
+
+                        // Apply per-element optical auto-leading & baseline quantization to individual headings
+                        if (['H1', 'H2', 'H3'].includes(clone.tagName)) {
+                            this.applyHeadingAutoLeading(clone, currentContentNode);
+                        }
                         
                         if (isChildOverflowing(clone, currentContentNode)) {
                             currentContentNode.removeChild(clone);
-                            const danglingHeading = (clone.tagName === 'P') ? popDanglingHeadingIfPresent(currentContentNode) : null;
+                            const danglingHeadings = popDanglingHeadingsIfPresent(currentContentNode);
                             pageIndex++;
                             currentContentNode = getOrCreatePage(pageIndex);
-                            if (danglingHeading) {
-                                currentContentNode.appendChild(danglingHeading);
-                                if (isBody) {
-                                    const hKey = this.normalizeHeadingKey(danglingHeading.innerText);
-                                    if (hKey) headingPageMap.set(hKey, pageIndex);
-                                }
-                            }
+                            restoreDanglingHeadingsOnPage(danglingHeadings, currentContentNode, pageIndex, isBody);
                             currentContentNode.appendChild(clone);
+                            if (['H1', 'H2', 'H3'].includes(clone.tagName)) {
+                                this.applyHeadingAutoLeading(clone, currentContentNode);
+                            }
                         }
 
                         // Record exact page index for headings
