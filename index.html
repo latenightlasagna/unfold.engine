@@ -1218,96 +1218,175 @@
         #preflight-doc-container {
             display: flex; flex-wrap: wrap; gap: 0; justify-content: center; padding: 40px;
         }
-        .imposition-2up { flex-direction: column !important; align-items: center; gap: 20px !important; }
-        
-        .print-sheet {
-            display: flex; flex-direction: row; background: white; margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;
+
+        /* Override for Preflight layout flows */
+        .imposition-2up {
+            flex-direction: column !important;
+            align-items: center;
+            gap: 24px !important;
         }
-        .print-sheet .page { box-shadow: none; margin: 0; }
-        .print-sheet.show-fold-marks::after {
-            content: ''; position: absolute;
-            top: 0; bottom: 0; left: 50%;
-            border-left: 1px dashed rgba(0,0,0,0.6);
-            pointer-events: none; z-index: 100;
+        
+        .print-sheet-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
         }
 
-        /* Duplex Printing Fix */
-        .fix-duplex .sheet-back-side {
+        .sheet-meta-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: #e6e6e6;
+            background: rgba(0, 0, 0, 0.55);
+            padding: 3px 10px;
+            border-radius: 3px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            user-select: none;
+        }
+
+        /* Physical 2-Up Sheet Wrapper for Booklet & Spreads */
+        .print-sheet {
+            display: grid;
+            grid-template-columns: var(--doc-width) var(--doc-width);
+            width: calc(var(--doc-width) * 2);
+            height: var(--doc-height);
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .print-sheet > .page {
+            width: var(--doc-width);
+            height: var(--doc-height);
+            box-shadow: none;
+            margin: 0 !important;
+        }
+        .print-sheet.show-fold-marks::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            border-left: 1px dashed rgba(0,0,0,0.6);
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Duplex Printing Fix (rotates every back-side sheet 180deg) */
+        .fix-duplex .print-sheet.sheet-back-side {
             transform: rotate(180deg);
+            transform-origin: 50% 50%;
         }
 
         /* --- FLAWLESS NATIVE PDF EXPORT --- */
         @media print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
           body, html { 
             height: auto !important; 
-            width: 100% !important;
+            width: auto !important;
             overflow: visible !important; 
             background: white !important; 
             margin: 0 !important; 
             padding: 0 !important; 
+            display: block !important;
           }
           
-          #ui-panel, #pip-editor, #workspace-hud, #unfold-tooltip, .modal-overlay { display: none !important; }
+          #ui-panel, #pip-editor, #workspace-hud, #unfold-tooltip, .modal-overlay, .sheet-meta-label {
+            display: none !important;
+          }
           
           #workspace, #canvas { 
             background: none !important; 
             overflow: visible !important; 
             position: static !important; 
             display: block !important; 
-            width: 100% !important; 
+            width: auto !important; 
             height: auto !important; 
             transform: none !important; 
+            transition: none !important;
           }
           
           #document-container { 
             padding: 0 !important; 
-            width: 100% !important; 
+            width: auto !important; 
             display: block !important; 
             margin: 0 !important; 
           }
           
-          .page { 
+          /* 1. Single-Page Export Rules (ONLY when NOT in 2-Up / Booklet mode) */
+          #document-container:not(.imposition-2up) > .page { 
             margin: 0 !important; 
             box-shadow: none !important; 
             border: none !important; 
-            page-break-after: always !important; 
-            break-after: page !important; 
             page-break-inside: avoid !important; 
             break-inside: avoid !important; 
             width: var(--doc-width) !important;
             height: var(--doc-height) !important;
             overflow: hidden !important;
           }
+          #document-container:not(.imposition-2up) > .page:not(:last-child) {
+            page-break-after: always !important; 
+            break-after: page !important; 
+          }
           
+          /* 2. Booklet & 2-Up Spread Export Rules */
+          #document-container.imposition-2up {
+            display: block !important;
+          }
+          .print-sheet-wrapper {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          .print-sheet-wrapper:not(:last-child) {
+            page-break-after: always !important;
+            break-after: page !important;
+          }
           .print-sheet { 
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            width: 100% !important;
+            display: grid !important;
+            grid-template-columns: var(--doc-width) var(--doc-width) !important;
+            width: calc(var(--doc-width) * 2) !important;
             height: var(--doc-height) !important;
             box-shadow: none !important; 
             margin: 0 !important; 
             padding: 0 !important;
-            page-break-after: always !important; 
-            break-after: page !important; 
             page-break-inside: avoid !important; 
             break-inside: avoid !important; 
             overflow: hidden !important;
           }
           
-          .print-sheet .page { 
-            flex: 0 0 50% !important;
-            width: 50% !important;
-            height: 100% !important;
-            page-break-after: avoid !important;
-            break-after: avoid !important;
+          .print-sheet > .page { 
+            width: var(--doc-width) !important;
+            height: var(--doc-height) !important;
             margin: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            page-break-after: auto !important;
+            break-after: auto !important;
+            page-break-before: auto !important;
+            break-before: auto !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           
           .print-sheet.show-fold-marks::after { 
-            border-left: 1px dashed #000; 
-            content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 0;
+            border-left: 1px dashed rgba(0, 0, 0, 0.65) !important; 
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 0;
           }
         }
     </style>
@@ -2460,11 +2539,23 @@
                 const originalBtnExport = document.getElementById('btn-export');
                 const pfArea = document.getElementById('pf-preview-area');
                 
-                const createSheet = (marks) => {
+                const createSheet = (marks, isBackSide = false) => {
                     const div = document.createElement('div');
                     div.className = 'print-sheet';
-                    if(marks) div.classList.add('show-fold-marks');
+                    if (marks) div.classList.add('show-fold-marks');
+                    if (isBackSide) div.classList.add('sheet-back-side');
                     return div;
+                };
+
+                const wrapSheetWithLabel = (sheetEl, labelText) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'print-sheet-wrapper';
+                    const label = document.createElement('div');
+                    label.className = 'sheet-meta-label';
+                    label.textContent = labelText;
+                    wrapper.appendChild(label);
+                    wrapper.appendChild(sheetEl);
+                    return wrapper;
                 };
                 
                 const createBlankPage = () => {
@@ -2475,69 +2566,114 @@
                     return div;
                 };
 
-                const renderPreview = () => {
+                // Ensure the left page of any 2-up sheet uses Verso (even-page) margins
+                // and the right page uses Recto (odd-page) margins so spine gutters meet at the center fold
+                const assignSheetSlotSide = (pageNode, side) => {
+                    const clone = pageNode.cloneNode(true);
+                    clone.classList.remove('odd-page', 'even-page');
+                    clone.classList.add(side === 'left' ? 'even-page' : 'odd-page');
+                    return clone;
+                };
+
+                const renderPreview = (overrideLayout = null, overrideMarks = null) => {
                     pfDoc.innerHTML = '';
                     const pages = Array.from(this.docContainer.querySelectorAll('.page:not(.blank-page)'));
-                    const layout = layoutSel.value;
-                    const marks = foldCb.checked;
+                    const layout = overrideLayout || layoutSel.value;
+                    const marks = overrideMarks !== null ? overrideMarks : foldCb.checked;
+                    const duplexRotate = duplexCb.checked;
                     
+                    // Copy base visual classes (guides/baseline) and enforce facing-page margin rules on 2-up sheets
                     pfDoc.className = this.docContainer.className;
                     pfDoc.classList.add('imposition-container');
+                    pfDoc.classList.toggle('fix-duplex', duplexRotate);
                     
                     if (layout === 'spreads' || layout === 'booklet') {
-                        pfDoc.classList.add('imposition-2up');
+                        pfDoc.classList.remove('facing-disabled');
+                        pfDoc.classList.add('facing-enabled', 'imposition-2up');
                         pfDoc.style.width = 'auto';
                         
-                        let clonedPages = pages.map(p => p.cloneNode(true));
+                        const sourcePages = pages.map((p, idx) => ({
+                            node: p,
+                            label: `P.${idx + 1}`
+                        }));
                         
                         if (layout === 'booklet') {
-                            while(clonedPages.length % 4 !== 0) {
-                                clonedPages.push(createBlankPage());
+                            // Saddle-Stitch Booklet Imposition: pad page count to a multiple of 4 (minimum 4)
+                            while (sourcePages.length === 0 || sourcePages.length % 4 !== 0) {
+                                sourcePages.push({
+                                    node: createBlankPage(),
+                                    label: 'Blank'
+                                });
                             }
                             
-                            let total = clonedPages.length;
-                            for (let i = 0; i < total / 2; i++) {
-                                let sheet = createSheet(marks);
-                                if (i % 2 === 0) {
-                                    sheet.appendChild(clonedPages[total - 1 - i]);
-                                    sheet.appendChild(clonedPages[i]);
-                                } else {
-                                    sheet.appendChild(clonedPages[i]);
-                                    sheet.appendChild(clonedPages[total - 1 - i]);
-                                    sheet.classList.add('sheet-back-side');
-                                }
-                                pfDoc.appendChild(sheet);
+                            const total = sourcePages.length;
+                            const physicalSheetCount = total / 4;
+
+                            for (let s = 0; s < physicalSheetCount; s++) {
+                                // Front Side (Outer): Left = T - 1 - 2s, Right = 2s
+                                const frontLeftIdx = total - 1 - (2 * s);
+                                const frontRightIdx = 2 * s;
+                                const frontSheet = createSheet(marks, false);
+                                frontSheet.appendChild(assignSheetSlotSide(sourcePages[frontLeftIdx].node, 'left'));
+                                frontSheet.appendChild(assignSheetSlotSide(sourcePages[frontRightIdx].node, 'right'));
+                                pfDoc.appendChild(
+                                    wrapSheetWithLabel(
+                                        frontSheet,
+                                        `Sheet ${s + 1} of ${physicalSheetCount} · Front (Outer) — Left: ${sourcePages[frontLeftIdx].label} / Right: ${sourcePages[frontRightIdx].label}`
+                                    )
+                                );
+
+                                // Back Side (Inner): Left = 2s + 1, Right = T - 2 - 2s
+                                const backLeftIdx = (2 * s) + 1;
+                                const backRightIdx = total - 2 - (2 * s);
+                                const backSheet = createSheet(marks, true);
+                                backSheet.appendChild(assignSheetSlotSide(sourcePages[backLeftIdx].node, 'left'));
+                                backSheet.appendChild(assignSheetSlotSide(sourcePages[backRightIdx].node, 'right'));
+                                pfDoc.appendChild(
+                                    wrapSheetWithLabel(
+                                        backSheet,
+                                        `Sheet ${s + 1} of ${physicalSheetCount} · Back (Inner)${duplexRotate ? ' [180° Rotated]' : ''} — Left: ${sourcePages[backLeftIdx].label} / Right: ${sourcePages[backRightIdx].label}`
+                                    )
+                                );
                             }
                         } else {
-                            for(let i=0; i < clonedPages.length; i+=2) {
-                                let sheet = createSheet(marks);
-                                sheet.appendChild(clonedPages[i]);
-                                if(clonedPages[i+1]) {
-                                    sheet.appendChild(clonedPages[i+1]);
-                                } else {
-                                    sheet.appendChild(createBlankPage());
-                                }
-                                if ((i/2) % 2 !== 0) {
-                                    sheet.classList.add('sheet-back-side');
-                                }
-                                pfDoc.appendChild(sheet);
+                            // Sequential 2-Up Reader Spreads (1-2, 3-4, ...)
+                            for (let i = 0; i < sourcePages.length; i += 2) {
+                                const sheetIdx = Math.floor(i / 2);
+                                const isBackSide = sheetIdx % 2 !== 0;
+                                const leftEntry = sourcePages[i];
+                                const rightEntry = sourcePages[i + 1] || { node: createBlankPage(), label: 'Blank' };
+
+                                const sheet = createSheet(marks, isBackSide);
+                                sheet.appendChild(assignSheetSlotSide(leftEntry.node, 'left'));
+                                sheet.appendChild(assignSheetSlotSide(rightEntry.node, 'right'));
+                                pfDoc.appendChild(
+                                    wrapSheetWithLabel(
+                                        sheet,
+                                        `Spread ${sheetIdx + 1} — Left: ${leftEntry.label} / Right: ${rightEntry.label}`
+                                    )
+                                );
                             }
                         }
                     } else {
+                        // Single Pages
                         pfDoc.classList.remove('imposition-2up');
                         pfDoc.style.width = `calc((var(--doc-width) * 2) + 120px)`; 
                         pages.forEach(p => pfDoc.appendChild(p.cloneNode(true)));
                     }
                     
-                    setTimeout(() => {
-                        const area = document.getElementById('pf-preview-area');
-                        const scaleX = (area.clientWidth - 100) / pfDoc.scrollWidth;
-                        const scaleY = (area.clientHeight - 100) / pfDoc.scrollHeight;
-                        this.pfScale = Math.min(scaleX, scaleY, 1);
-                        this.pfTranslateX = 0;
-                        this.pfTranslateY = 0;
-                        this.updatePFCanvasTransform();
-                    }, 50);
+                    if (modal.style.display !== 'none') {
+                        setTimeout(() => {
+                            const area = document.getElementById('pf-preview-area');
+                            if (!area || !pfDoc.scrollWidth) return;
+                            const scaleX = (area.clientWidth - 100) / pfDoc.scrollWidth;
+                            const scaleY = (area.clientHeight - 100) / pfDoc.scrollHeight;
+                            this.pfScale = Math.min(scaleX, scaleY, 1);
+                            this.pfTranslateX = 0;
+                            this.pfTranslateY = 0;
+                            this.updatePFCanvasTransform();
+                        }, 50);
+                    }
                 };
                 
                 btnOpen.addEventListener('click', () => {
@@ -2550,66 +2686,75 @@
                 });
                 
                 layoutSel.addEventListener('change', (e) => {
-                    marksGroup.style.display = (e.target.value === 'spreads' || e.target.value === 'booklet') ? 'flex' : 'none';
-                    duplexGroup.style.display = (e.target.value === 'spreads' || e.target.value === 'booklet') ? 'flex' : 'none';
+                    const is2Up = e.target.value === 'spreads' || e.target.value === 'booklet';
+                    marksGroup.style.display = is2Up ? 'flex' : 'none';
+                    duplexGroup.style.display = is2Up ? 'flex' : 'none';
                     renderPreview();
                 });
                 
-                foldCb.addEventListener('change', renderPreview);
+                foldCb.addEventListener('change', () => renderPreview());
                 
-                duplexCb.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        pfDoc.classList.add('fix-duplex');
-                    } else {
-                        pfDoc.classList.remove('fix-duplex');
-                    }
-                });
+                duplexCb.addEventListener('change', () => renderPreview());
                 
                 const triggerPrint = (layout, marks) => {
-                  const originalHTML = this.docContainer.innerHTML;
-                  const originalClasses = this.docContainer.className;
-                  
-                  renderPreview(); 
-                  this.docContainer.innerHTML = pfDoc.innerHTML;
-                  this.docContainer.className = pfDoc.className;
-        
-                  const style = document.createElement('style');
-                  style.id = 'print-page-style';
-                  let width = getComputedStyle(document.documentElement).getPropertyValue('--doc-width').trim();
-                  let height = getComputedStyle(document.documentElement).getPropertyValue('--doc-height').trim();
-                  
-                  const preset = document.getElementById('doc-preset').value;
-        
-                  let pageRule = '';
-                  if (layout === 'spreads' || layout === 'booklet') {
-                    let landscapeSize = '';
-                    if (preset === 'A4') landscapeSize = 'A3 landscape';
-                    else if (preset === 'A5') landscapeSize = 'A4 landscape';
-                    else if (preset === 'A6') landscapeSize = 'A5 landscape';
-                    else {
-                      let val = parseFloat(width);
-                      let unit = width.replace(/[0-9.]/g, '');
-                      landscapeSize = `${(val * 2) + unit} ${height}`;
+                    // Build fresh imposition DOM in pfDoc
+                    renderPreview(layout, marks);
+
+                    const originalHTML = this.docContainer.innerHTML;
+                    const originalClasses = this.docContainer.className;
+                    const originalInlineWidth = this.docContainer.style.width;
+                    const originalTitle = document.title;
+
+                    // Swap imposed sheets into the main document container for native printing
+                    this.docContainer.innerHTML = pfDoc.innerHTML;
+                    this.docContainer.className = pfDoc.className;
+                    this.docContainer.style.width = 'auto';
+
+                    const existingStyle = document.getElementById('print-page-style');
+                    if (existingStyle) existingStyle.remove();
+
+                    const style = document.createElement('style');
+                    style.id = 'print-page-style';
+
+                    const rootStyle = getComputedStyle(document.documentElement);
+                    const width = rootStyle.getPropertyValue('--doc-width').trim();
+                    const height = rootStyle.getPropertyValue('--doc-height').trim();
+                    const val = parseFloat(width) || 148;
+                    const unit = width.replace(/[0-9.]/g, '') || 'mm';
+
+                    // Set exact physical @page dimensions (e.g. 296mm x 210mm for 2-up A5) so sheets never scale or clip
+                    if (layout === 'spreads' || layout === 'booklet') {
+                        style.textContent = `@page { size: ${val * 2}${unit} ${height}; margin: 0mm; }`;
+                    } else {
+                        style.textContent = `@page { size: ${width} ${height}; margin: 0mm; }`;
                     }
-                    pageRule = `@page { size: ${landscapeSize}; margin: 0mm; }`;
-                  } else {
-                    pageRule = `@page { size: ${preset ? preset + ' portrait' : width + ' ' + height}; margin: 0mm; }`;
-                  }
-        
-                  style.innerText = pageRule;
-                  document.head.appendChild(style);
-                  
-                  const originalTitle = document.title;
-                  document.title = "Procedural_Typesetting_Export";
-                  
-                  window.print();
-                  
-                  setTimeout(() => {
-                    document.title = originalTitle;
-                    document.head.removeChild(style);
-                    this.docContainer.innerHTML = originalHTML;
-                    this.docContainer.className = originalClasses;
-                  }, 1500);
+                    document.head.appendChild(style);
+
+                    document.title = layout === 'booklet'
+                        ? 'Procedural_Typesetting_Booklet_Imposition'
+                        : 'Procedural_Typesetting_Export';
+
+                    let restored = false;
+                    const restoreDOM = () => {
+                        if (restored) return;
+                        restored = true;
+                        window.removeEventListener('afterprint', restoreDOM);
+                        document.title = originalTitle;
+                        if (style.parentNode) style.parentNode.removeChild(style);
+                        this.docContainer.innerHTML = originalHTML;
+                        this.docContainer.className = originalClasses;
+                        this.docContainer.style.width = originalInlineWidth;
+                    };
+
+                    // Keep the imposed DOM active until the Print / Save-as-PDF dialog actually closes
+                    window.addEventListener('afterprint', restoreDOM, { once: true });
+
+                    // Wait two animation frames so the browser lays out the CSS Grid sheets before snapshotting
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            window.print();
+                        });
+                    });
                 };
                 
                 btnPrint.addEventListener('click', () => {
@@ -2618,7 +2763,7 @@
                 });
 
                 originalBtnExport.addEventListener('click', () => {
-                    triggerPrint('single', false);
+                    triggerPrint(layoutSel.value, foldCb.checked);
                 });
 
                 pfArea.addEventListener('mousedown', (e) => {
